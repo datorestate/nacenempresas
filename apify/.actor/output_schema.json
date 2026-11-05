@@ -1,0 +1,19 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Spain new companies and corporate events (BORME)",
+  "description": "One record per new company or corporate event. Company data only, no personal data.",
+  "properties": {
+    "companies": {
+      "type": "string",
+      "title": "Companies",
+      "description": "Table of new companies and events (overview view).",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    },
+    "results": {
+      "type": "string",
+      "title": "All fields",
+      "description": "Every record with all fields, as JSON, CSV or Excel.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items"
+    }
+  }
+}
