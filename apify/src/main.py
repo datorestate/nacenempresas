@@ -8,7 +8,6 @@ from apify import Actor
 from nacenempresas import borme_api, parser
 from nacenempresas.provincias import lista_provincias, normaliza
 
-EVENTO = "result"  # evento de cobro por resultado (pay-per-event en Apify Console)
 
 # Sin domicilio ni enlace al PDF del BORME (que lo contiene): eso es lo que se vende en la
 # suscripción de NacenEmpresas. El Actor da el resto, más el identificador del BORME.
@@ -75,10 +74,9 @@ async def main():
                                 continue
                         filas.append(_plano(r, ev))
                 if filas:
-                    try:
-                        await Actor.push_data(filas, charged_event_name=EVENTO)
-                    except TypeError:  # SDK sin pay-per-event
-                        await Actor.push_data(filas)
+                    # Cobro: evento automático de Apify "apify-default-dataset-item" (uno por fila
+                    # guardada). Apify respeta solo el límite de gasto que fije el usuario.
+                    await Actor.push_data(filas)
                     total += len(filas)
             if solo_ultimo and total:
                 break
