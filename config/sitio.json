@@ -42,12 +42,13 @@
     "goatcounter": ""
   },
   "revision_fiscal": "2026-11-05",
-  "google_verificacion": "",
+  "google_verificacion": "SRyt0pvcrzTQDpF_LCi69yQYMgcv-5D-IQZRpFZlu58",
   "fiscal": {
     "_nota": "Prestador establecido en Canarias. Precios sin impuestos indirectos. Mientras igic_pequeno_empresario sea true (régimen especial del pequeño empresario o profesional, hasta 50.000 € de volumen de operaciones), no se repercute IGIC a nadie. Si dejas el régimen, pon false: a los clientes canarios se les sumará el IGIC al tipo indicado. Revisa los textos con tu gestoría.",
     "territorio": "Canarias",
     "igic_pequeno_empresario": true,
     "igic_tipo": 7,
     "solo_empresas": true
-  }
+  },
+  "indexnow_clave": "68b4b550af0e17b83f99e42b0d1cd56d"
 }

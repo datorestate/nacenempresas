@@ -286,7 +286,7 @@ def construir(hoy: date | None = None):
         escribe(f"{nombre_f}.html", "simple.html", "0.2", titulo=f"{titulo} | NacenEmpresas",
                 descripcion=f"{titulo} de {cfg['nombre']}.", cuerpo=bruto)
     escribe("404.html", "simple.html", "0.0", titulo="Página no encontrada | NacenEmpresas", descripcion="Página no encontrada.",
-            cuerpo="<h1>Esta página no existe</h1><p>Puede que la provincia o el sector ya no tenga empresas en los últimos 30 días. <a href='/'>Vuelve al inicio</a> o consulta el <a href='provincias/index.html'>listado por provincia</a>.</p>")
+            cuerpo="<h1>Esta página no existe</h1><p>Puede que la provincia o el sector ya no tenga empresas en los últimos 30 días. <a href='" + cfg["url_base"] + "/index.html'>Vuelve al inicio</a> o consulta el <a href='" + cfg["url_base"] + "/provincias/index.html'>listado por provincia</a>.</p>")
 
     # ---------- sitemap y robots
     url = cfg["url_base"]
@@ -299,6 +299,9 @@ def construir(hoy: date | None = None):
     (SALIDA / "sitemap.xml").write_text("\n".join(sm), "utf-8")
     (SALIDA / "robots.txt").write_text(f"User-agent: *\nAllow: /\nDisallow: /gracias.html\nSitemap: {url}/sitemap.xml\n", "utf-8")
     (SALIDA / ".nojekyll").write_text("", "utf-8")
+    if cfg.get("indexnow_clave"):
+        # Clave de IndexNow (Bing y otros buscadores): https://www.indexnow.org/documentation
+        (SALIDA / f"{cfg['indexnow_clave']}.txt").write_text(cfg["indexnow_clave"], "utf-8")
     print(f"Web generada: {len(paginas)} páginas en {SALIDA}")
     return len(paginas)
 

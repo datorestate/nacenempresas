@@ -43,3 +43,13 @@ jobs:
     steps:
       - id: despliegue
         uses: actions/deploy-pages@v4
+  buscadores:
+    needs: desplegar
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Avisar a Bing (IndexNow)
+        run: python scripts/indexnow.py
