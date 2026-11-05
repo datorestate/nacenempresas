@@ -12,7 +12,8 @@
     "pro_mes": 49,
     "pro_anio": 490,
     "lista": 29,
-    "dias_prueba": 14
+    "dias_prueba": 7,
+    "empresas_prueba_dia": 5
   },
   "afiliados": {
     "_nota": "Sustituye cada url por tu enlace de afiliado cuando te acepten en el programa. Si se deja vacía, se usa la web oficial sin comisión.",

@@ -29,7 +29,7 @@ FAQ = [
     ("¿Puedo enviarles un email comercial a estas empresas?", "No sin su consentimiento previo: el artículo 21 de la LSSI lo prohíbe. Lo habitual y eficaz es el correo postal al domicilio social, la visita o la llamada. Te damos el domicilio completo para eso."),
     ("¿Traéis teléfono o email de las empresas?", "No. El BORME no los publica y no los compramos a terceros. Es la diferencia entre un dato oficial y fresco y una base de datos de contacto."),
     ("¿Cuándo llega el aviso?", "Cada día laborable por la mañana, poco después de que el BOE publique el BORME. Si eliges el resumen semanal, lo recibes los lunes."),
-    ("¿Cómo funciona la prueba?", "Te das de alta sin tarjeta y recibes los avisos durante 14 días. Antes del final te recordamos cómo añadir una forma de pago; si no la añades, la prueba termina sola."),
+    ("¿Cómo funciona la prueba?", "Te das de alta con tu tarjeta y durante 7 días recibes cada mañana una muestra: hasta 5 sociedades al día de tu zona, con su actividad, sector y capital, pero sin domicilio. No se cobra nada hasta el día 8; ese día empieza la suscripción y pasas a recibirlas todas, con domicilio. Si cancelas antes desde el portal del cliente, no pagas nada."),
     ("¿Cómo es la factura?", "Al darte de alta indicas tu NIF o CIF y tu razón social, y cada cobro genera su factura, descargable desde el portal del cliente. Facturamos desde Canarias: a empresas de la Península y Baleares la factura va sin IVA ni IGIC, y el IVA lo autoliquidas tú por inversión del sujeto pasivo, con lo que tu coste neto es el precio publicado. A empresas canarias, sin IGIC mientras estemos en el régimen del pequeño empresario."),
     ("¿Puedo contratar como particular?", "No. El servicio es solo para empresas y profesionales, y por eso pedimos el NIF o CIF al darte de alta."),
 ]
@@ -104,9 +104,9 @@ def _enlaces_pago(cfg):
     def l(k, asunto):
         return links.get(k) or respaldo + asunto.replace(" ", "%20")
     return {
-        "basico_mes": l("basico_mes", "Quiero la prueba gratuita (plan Básico)"),
+        "basico_mes": l("basico_mes", "Quiero el plan Básico"),
         "basico_anio": l("basico_anio", "Quiero el plan Básico anual"),
-        "pro_mes": l("pro_mes", "Quiero la prueba gratuita (plan Pro)"),
+        "pro_mes": l("pro_mes", "Quiero el plan Pro"),
         "pro_anio": l("pro_anio", "Quiero el plan Pro anual"),
         "lista": l("lista", "Quiero una lista de empresas nuevas"),
         "portal": links.get("portal", ""),
@@ -179,7 +179,7 @@ def construir(hoy: date | None = None):
     muestra = sorted(ult_fichas, key=lambda f: -(f.get("capital") or 0))[:6] or fichas[:6]
     escribe("index.html", "index.html", "1.0",
             titulo="Empresas recién creadas en España: avisos diarios del BORME | NacenEmpresas",
-            descripcion="Recibe cada mañana las sociedades constituidas en tu provincia y sector, con domicilio, actividad y capital. Prueba 14 días gratis, sin tarjeta.",
+            descripcion="Recibe cada mañana las sociedades constituidas en tu provincia y sector, con domicilio, actividad y capital. Pruébalo 7 días antes de pagar.",
             ultimo={**ultimo, "fecha_larga": _fecha_larga(ultimo["fecha"])}, muestra=muestra,
             total_30=len(fichas), dias_30=len({f["fecha"] for f in fichas}), faq=FAQ,
             jsonld={"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [

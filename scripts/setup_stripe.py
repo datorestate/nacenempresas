@@ -5,7 +5,8 @@
 - Prestador en Canarias: precios sin impuestos indirectos (tax_behavior exclusive) y un
   tipo de IGIC (7 %) que solo se aplica a clientes canarios si dejas el régimen del
   pequeño empresario (ver nacenempresas/fiscal.py).
-- Payment Links con prueba gratuita de 14 días SIN tarjeta, campos para provincia
+- Payment Links con prueba de 7 días CON tarjeta (se cobra el día 8 si no se cancela;
+  durante la prueba los avisos van recortados, ver avisos.py), campos para provincia
   (incluida "Canarias", las dos provincias), actividad y frecuencia, y NIF/CIF
   obligatorio: solo se vende a empresas y profesionales.
 - Portal del cliente con página de acceso por email (baja, tarjeta, facturas).
@@ -27,7 +28,7 @@ sys.path.insert(0, str(RAIZ))
 from nacenempresas import fiscal  # noqa: E402
 from nacenempresas.config import sitio  # noqa: E402
 from nacenempresas.provincias import PROVINCIAS  # noqa: E402
-from nacenempresas.stripe_api import Stripe  # noqa: E402
+from nacenempresas.stripe_api import Stripe, StripeError  # noqa: E402
 
 
 def centimos(euros):
@@ -81,10 +82,34 @@ CAMPO_PROVINCIAS_PRO = {"key": "provincias", "type": "text",
                         "label": {"type": "custom", "custom": "Provincias (hasta 5, separadas por comas)"}}
 
 
+def datos_prueba(cfg, clave):
+    """Prueba con tarjeta obligatoria: al terminar se cobra sola si el cliente no cancela."""
+    return {"subscription_data": {
+                "trial_period_days": cfg["precios"]["dias_prueba"],
+                "trial_settings": {"end_behavior": {"missing_payment_method": "cancel"}},
+                "metadata": {"rc_link": clave}},
+            "payment_method_collection": "always"}
+
+
+def _necesita_actualizar(pl, deseado):
+    sd = pl.get("subscription_data") or {}
+    return (pl.get("payment_method_collection") != deseado["payment_method_collection"] or
+            sd.get("trial_period_days") != deseado["subscription_data"]["trial_period_days"])
+
+
 def enlace(st, precio, campos, cfg, suscripcion=True, clave=""):
     for pl in st.listar("payment_links", active="true"):
         if (pl.get("metadata") or {}).get("rc_link") == clave:
-            return pl
+            if suscripcion and _necesita_actualizar(pl, datos_prueba(cfg, clave)):
+                # Se actualiza el enlace existente: la URL (web, QR, cartas) no cambia
+                try:
+                    return st.post(f"payment_links/{pl['id']}", datos_prueba(cfg, clave))
+                except StripeError as e:
+                    print(f"No se pudo actualizar {clave} ({e}); se desactiva y se crea uno nuevo")
+                    st.post(f"payment_links/{pl['id']}", {"active": False})
+                    break
+            else:
+                return pl
     datos = {
         "line_items": [{"price": precio["id"], "quantity": 1}],
         "custom_fields": campos,
@@ -98,11 +123,7 @@ def enlace(st, precio, campos, cfg, suscripcion=True, clave=""):
         "metadata": {"rc_link": clave},
     }
     if suscripcion:
-        datos["subscription_data"] = {
-            "trial_period_days": cfg["precios"]["dias_prueba"],
-            "trial_settings": {"end_behavior": {"missing_payment_method": "cancel"}},
-            "metadata": {"rc_link": clave}}
-        datos["payment_method_collection"] = "if_required"
+        datos.update(datos_prueba(cfg, clave))
     else:
         datos["invoice_creation"] = {"enabled": True,
                                      "invoice_data": {"footer": fiscal.pie_generico(cfg)}}

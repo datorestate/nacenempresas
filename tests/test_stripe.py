@@ -64,8 +64,8 @@ def test_setup_stripe(monkeypatch, tmp_path):
     assert salida["igic_tax_rate"] and salida["basico_mes"].endswith("?locale=es")
     links = [d for r, d in fake.posts if r == "payment_links"]
     sub = next(d for d in links if d["metadata"]["rc_link"] == "basico_mes")
-    assert sub["payment_method_collection"] == "if_required"
-    assert sub["subscription_data"]["trial_period_days"] == 14
+    assert sub["payment_method_collection"] == "always"  # prueba con tarjeta
+    assert sub["subscription_data"]["trial_period_days"] == 7
     opciones = sub["custom_fields"][0]["dropdown"]["options"]
     assert len(opciones) == 53 and opciones[0]["value"] == "pCN"
     assert len(sub["custom_fields"]) <= 3
@@ -142,3 +142,25 @@ def test_ignora_suscripciones_de_otra_actividad():
     fake.objetos["subscriptions"] = [ajena, propia]
     ids = {s.id for s in suscriptores.desde_stripe(fake)}
     assert ids == {"sub_rc"}
+
+
+def test_actualiza_enlaces_existentes(monkeypatch):
+    """Enlaces creados con la prueba antigua (14 días sin tarjeta): se actualizan, sin cambiar la URL."""
+    sys.path.insert(0, str(RAIZ / "scripts"))
+    import setup_stripe
+    from nacenempresas.config import sitio
+    fake = FakeStripe()
+    antiguo = {"id": "plink_viejo", "url": "https://buy.stripe.com/viejo", "metadata": {"rc_link": "basico_mes"},
+               "payment_method_collection": "if_required", "subscription_data": {"trial_period_days": 14}}
+    fake.objetos["payment_links"] = [antiguo]
+    setup_stripe.enlace(fake, {"id": "price_1"}, [], sitio(), True, "basico_mes")
+    ruta, datos = fake.posts[-1]
+    assert ruta == "payment_links/plink_viejo"
+    assert datos["payment_method_collection"] == "always"
+    assert datos["subscription_data"]["trial_period_days"] == 7
+    # Ya actualizado: no se toca
+    fake2 = FakeStripe()
+    fake2.objetos["payment_links"] = [{**antiguo, "payment_method_collection": "always",
+                                       "subscription_data": {"trial_period_days": 7}}]
+    assert setup_stripe.enlace(fake2, {"id": "price_1"}, [], sitio(), True, "basico_mes")["id"] == "plink_viejo"
+    assert fake2.posts == []

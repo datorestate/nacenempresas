@@ -1,6 +1,10 @@
 """Envío de avisos a clientes: email HTML + CSV, bienvenida con muestra, fin de prueba
 y entrega automática de listas puntuales compradas.
 
+Durante la prueba (suscripción en estado trialing) los avisos van recortados: como mucho
+precios.empresas_prueba_dia sociedades, sin domicilio, sin enlace al PDF del BORME, sin CSV
+ni señales. El título sigue mostrando el total real, que es lo que vende.
+
 Uso:
     python -m nacenempresas.avisos --fecha 2026-11-03            # envía
     python -m nacenempresas.avisos --fecha 2026-11-03 --prueba   # escribe .eml en out/ sin enviar
@@ -68,6 +72,21 @@ def seleccion(registros: list[dict], sub) -> dict:
     return {"nuevas": nuevas, "senales": senales}
 
 
+def recortar_prueba(sel: dict, cfg) -> dict:
+    """Durante la prueba: pocas empresas, sin señales (el domicilio se quita al formatear)."""
+    n = cfg["precios"].get("empresas_prueba_dia", 5)
+    return {"nuevas": sel["nuevas"][:n], "senales": [], "total": len(sel["nuevas"])}
+
+
+def aviso_recorte(sel, cfg) -> str:
+    total = sel.get("total", len(sel["nuevas"]))
+    return ("<p style='background:#e8f3ee;padding:12px;border-radius:8px'>Estás en el periodo de prueba: "
+            f"te enseñamos <strong>{len(sel['nuevas'])} de {total}</strong> sociedades, sin domicilio. "
+            "Cuando empiece tu suscripción recibirás todas las que encajen con tu filtro, con domicilio social, "
+            "capital y enlace al BORME"
+            ". En el plan Pro, también el CSV y las señales.</p>")
+
+
 # ------------------------------------------------------------------ formato
 
 def _eur(v):
@@ -110,19 +129,22 @@ ETIQUETA_SENAL = {
 }
 
 
-def html_correo(sub, sel, titulo, intro, cfg, extra_html="") -> str:
+def html_correo(sub, sel, titulo, intro, cfg, extra_html="", recortado=False) -> str:
+    """recortado=True (prueba): sin domicilio ni enlace al PDF del BORME, que lo contiene."""
     e = html.escape
     filas = []
     for r in sel["nuevas"][:300]:
         c = _const(r)
+        lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
+        borme = "" if recortado else f"<br><a href='{e(r['url_pdf'])}' style='color:#0f6b4f'>BORME</a>"
         filas.append(
             f"<tr><td style='padding:10px 8px;border-bottom:1px solid #D9DEE3'>"
             f"<strong style='color:#14213D'>{e(r['denominacion'])}</strong><br>"
-            f"<span style='color:#4A5672;font-size:13px'>{e(c.get('domicilio') or '')}</span><br>"
+            f"<span style='color:#4A5672;font-size:13px'>{e(lugar)}</span><br>"
             f"<span style='font-size:13px'>{e((c.get('objeto_social') or '')[:260])}</span></td>"
             f"<td style='padding:10px 8px;border-bottom:1px solid #D9DEE3;font-size:13px;white-space:nowrap'>"
-            f"{e(sectores.nombre_sector(c.get('sector') or 'otros'))}<br>{_eur(c.get('capital'))}<br>"
-            f"<a href='{e(r['url_pdf'])}' style='color:#0f6b4f'>BORME</a></td></tr>")
+            f"{e(sectores.nombre_sector(c.get('sector') or 'otros'))}<br>{_eur(c.get('capital'))}"
+            f"{borme}</td></tr>")
     tabla = ("<table style='width:100%;border-collapse:collapse'>" + "".join(filas) + "</table>") \
         if filas else "<p>Hoy no hay sociedades nuevas que encajen con tu filtro.</p>"
     sen = ""
@@ -152,11 +174,15 @@ Para cambiar provincias o actividad, responde a este correo.</p>
 </div></body></html>"""
 
 
-def texto_plano(sel) -> str:
+def texto_plano(sel, recortado=False) -> str:
     lineas = []
     for r in sel["nuevas"]:
         c = _const(r)
-        lineas.append(f"- {r['denominacion']} | {c.get('domicilio') or ''} | {(c.get('objeto_social') or '')[:160]}")
+        lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
+        lineas.append(f"- {r['denominacion']} | {lugar} | {(c.get('objeto_social') or '')[:160]}")
+    if recortado:
+        lineas.append(f"\nPeriodo de prueba: {len(sel['nuevas'])} de {sel.get('total', len(sel['nuevas']))} "
+                      "sociedades, sin domicilio. Con la suscripción activa las recibirás todas.")
     for r, ev in sel["senales"]:
         lineas.append(f"* {ETIQUETA_SENAL.get(ev['tipo'], ev['tipo'])}: {r['denominacion']}")
     return "\n".join(lineas) + "\n\n" + AVISO_LEGAL_CLIENTE
@@ -237,25 +263,38 @@ def enviar_avisos(dia: date, subs, cartero: Cartero, st=None) -> dict:
     semana = almacen.registros_rango(dia - timedelta(days=7), dia) if (es_lunes or any(
         not s.bienvenida_enviada for s in subs)) else []
     stats = {"diarios": 0, "semanales": 0, "bienvenidas": 0, "avisos_prueba": 0, "sin_coincidencias": 0}
+    portal = html.escape(config.stripe_links().get("portal", cfg["url_base"]))
     for sub in subs:
         extra = ""
-        if sub.estado == "trialing" and sub.fin_prueba and not sub.tiene_pago:
+        en_prueba = sub.estado == "trialing"
+        if en_prueba and sub.fin_prueba:
             dias = max(0, int((sub.fin_prueba - time.time()) // 86400))
-            if dias <= 3:
-                extra = (f"<p style='background:#fff4d6;padding:12px;border-radius:8px'>Tu prueba gratuita termina en "
-                         f"<strong>{dias} día{'s' if dias != 1 else ''}</strong>. Para seguir recibiendo los avisos, añade una forma de pago en el "
-                         f"<a href='{html.escape(config.stripe_links().get('portal', cfg['url_base']))}'>portal del cliente</a> "
-                         f"(entra con tu email). Sin permanencia.</p>")
+            plural = "s" if dias != 1 else ""
+            if dias <= 2 and sub.tiene_pago:
+                extra = (f"<p style='background:#fff4d6;padding:12px;border-radius:8px'>Tu prueba termina en "
+                         f"<strong>{dias} día{plural}</strong>. Ese día empieza tu suscripción con la tarjeta que indicaste "
+                         f"y pasarás a recibir todas las sociedades, con domicilio. Si no quieres continuar, cancela antes en el "
+                         f"<a href='{portal}'>portal del cliente</a> (entra con tu email). Sin permanencia.</p>")
+                stats["avisos_prueba"] += 1
+            elif dias <= 3 and not sub.tiene_pago:
+                extra = (f"<p style='background:#fff4d6;padding:12px;border-radius:8px'>Tu prueba termina en "
+                         f"<strong>{dias} día{plural}</strong>. Para seguir recibiendo los avisos, añade una forma de pago en el "
+                         f"<a href='{portal}'>portal del cliente</a> (entra con tu email). Sin permanencia.</p>")
                 stats["avisos_prueba"] += 1
         adj = []
         if not sub.bienvenida_enviada:
             sel = seleccion(semana, sub)
-            titulo = f"Bienvenido a {cfg['nombre']}: {len(sel['nuevas'])} sociedades nuevas en tu zona esta semana"
+            if en_prueba:
+                sel = recortar_prueba(sel, cfg)
+                extra = aviso_recorte(sel, cfg) + extra
+            total = sel.get("total", len(sel["nuevas"]))
+            titulo = f"Bienvenido a {cfg['nombre']}: {total} sociedades nuevas en tu zona esta semana"
             intro = ("Este es tu primer aviso, con las constituciones de los últimos 7 días. "
                      "A partir de mañana recibirás las del día cada mañana laborable.")
-            if sub.con_csv:
+            if sub.con_csv and not en_prueba:
                 adj.append(("nacenempresas_ultimos_7_dias.csv", csv_bytes(sel["nuevas"]), "text/csv"))
-            cartero.enviar(sub.email, titulo, html_correo(sub, sel, titulo, intro, cfg, extra), texto_plano(sel), adj)
+            cartero.enviar(sub.email, titulo, html_correo(sub, sel, titulo, intro, cfg, extra, en_prueba),
+                           texto_plano(sel, en_prueba), adj)
             stats["bienvenidas"] += 1
             if st is not None and sub.id.startswith("sub_") and not cartero.prueba:
                 # solo se marca la bienvenida cuando el correo sale de verdad
@@ -270,15 +309,19 @@ def enviar_avisos(dia: date, subs, cartero: Cartero, st=None) -> dict:
             clave = "semanales"
         else:
             sel = seleccion(registros_dia, sub)
-            if not sel["nuevas"] and not sel["senales"] and not extra:
+            if not sel["nuevas"] and not (sel["senales"] and not en_prueba) and not extra:
                 stats["sin_coincidencias"] += 1
                 continue
             titulo = f"{len(sel['nuevas'])} sociedades nuevas hoy · BORME {dia.strftime('%d/%m/%Y')}"
             intro = "Constituciones publicadas hoy en el BORME que encajan con tu filtro."
             clave = "diarios"
-        if sub.con_csv and sel["nuevas"]:
+        if en_prueba:
+            sel = recortar_prueba(sel, cfg)
+            extra = aviso_recorte(sel, cfg) + extra
+        if sub.con_csv and sel["nuevas"] and not en_prueba:
             adj.append((f"nacenempresas_{dia.isoformat()}.csv", csv_bytes(sel["nuevas"]), "text/csv"))
-        cartero.enviar(sub.email, titulo, html_correo(sub, sel, titulo, intro, cfg, extra), texto_plano(sel), adj)
+        cartero.enviar(sub.email, titulo, html_correo(sub, sel, titulo, intro, cfg, extra, en_prueba),
+                       texto_plano(sel, en_prueba), adj)
         stats[clave] += 1
     return stats
 

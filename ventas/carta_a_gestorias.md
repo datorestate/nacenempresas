@@ -22,7 +22,7 @@ NacenEmpresas les envía cada mañana laborable, a primera hora, las sociedades 
 
 Somos un servicio canario y facturamos desde Canarias: para un despacho de la Península o Baleares la factura no lleva IVA (inversión del sujeto pasivo), y para uno canario está exenta de IGIC.
 
-Les invito a probarlo **14 días gratis, sin tarjeta**: basta con entrar en [url]/#tarifas o llamarme al [teléfono] y les doy de alta yo mismo.
+Les invito a probarlo **7 días antes del primer cobro**, con una muestra diaria: basta con entrar en [url]/#tarifas o llamarme al [teléfono] y les doy de alta yo mismo.
 
 Un saludo cordial,
 

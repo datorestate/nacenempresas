@@ -7,7 +7,7 @@ Estado a 5/11/2026: **todo funciona y ya se puede cobrar.** Coste: 0 €.
 - Web pública con datos reales del BORME en las 52 provincias: https://datorestate.github.io/nacenempresas (se actualiza sola cada mañana laborable a las 7:20 UTC, con reintento a las 10:30).
 - Repositorio `datorestate/nacenempresas`, GitHub Pages y los 8 secretos (`DATA_KEY`, `STRIPE_SECRET_KEY`, `SMTP_*`, `FROM_EMAIL`, `OWNER_EMAIL`).
 - Cuenta de Stripe **NacenEmpresas** separada de tu otra actividad, activada, con descriptor NACENEMPRESAS, marca, correos en español, facturas con prefijo NACEN y pie con las menciones fiscales.
-- Clave restringida "NacenEmpresas GitHub Actions" (solo los 9 permisos necesarios) y enlaces de pago en modo real: Básico 19 €/mes o 190 €/año, Pro 49 €/mes o 490 €/año, lista puntual 29 €. Prueba de 14 días sin tarjeta, NIF/CIF obligatorio, provincia (Canarias primero), actividad y frecuencia. Portal del cliente para darse de baja.
+- Clave restringida "NacenEmpresas GitHub Actions" (solo los 9 permisos necesarios) y enlaces de pago en modo real: Básico 19 €/mes o 190 €/año, Pro 49 €/mes o 490 €/año, lista puntual 29 €. Prueba de 7 días con tarjeta (primer cobro el día 8) y avisos recortados durante la prueba (5 empresas al día, sin domicilio), NIF/CIF obligatorio, provincia (Canarias primero), actividad y frecuencia. Portal del cliente para darse de baja.
 - Aviso legal, privacidad y condiciones con tu nombre, NIF y domicilio en Telde. NIF en las facturas de Stripe.
 - Correo: el envío por Gmail funciona (el 5/11 salió el primer informe diario a tu correo).
 - Google Search Console verificado (etiqueta meta en la portada), `sitemap.xml` enviado y solicitada la indexación de la portada y de la página de Canarias. Bing recibe las páginas por IndexNow tras cada publicación, sin cuenta.
@@ -15,7 +15,7 @@ Estado a 5/11/2026: **todo funciona y ya se puede cobrar.** Coste: 0 €.
 
 ## Lo que queda (solo tú)
 
-1. **Prueba real de alta.** Abre el plan Básico desde la web, date de alta con otro correo tuyo y comprueba que llegan el correo de bienvenida y, la mañana laborable siguiente, el aviso. Cancela después desde el portal del cliente.
+1. **Prueba real de alta.** Abre el plan Básico desde la web, date de alta con otro correo tuyo y comprueba que llegan el correo de bienvenida y, la mañana laborable siguiente, el aviso (los dos recortados: 5 empresas, sin domicilio). Ahora pide tarjeta: **cancela desde el portal del cliente antes del día 8** o se cobrará el primer mes.
 2. **Search Console en una semana:** mira Páginas e Indexación; si el sitemap sigue en "No se ha podido obtener", vuelve a enviarlo.
 
 ## Antes del primer cobro

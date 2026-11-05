@@ -21,6 +21,7 @@ Avisos diarios de sociedades recién creadas en España a partir del BORME, una 
   sitio_web.py ─► GitHub Pages (portada, 52 provincias, provincia+sector, informe, calculadoras)
 ```
 
+- **Prueba recortada:** 7 días con tarjeta obligatoria (primer cobro el día 8). Mientras la suscripción está en `trialing`, los avisos llevan como mucho 5 sociedades al día (`precios.empresas_prueba_dia`), sin domicilio, sin enlace al PDF del BORME, sin CSV ni señales.
 - **Sin base de datos:** Stripe es la lista de clientes. Cada alta trae provincia, actividad y frecuencia en los campos del Payment Link.
 - **Sin personas físicas:** el parser descarta empresarios individuales y nunca guarda nombres de cargos; los textos libres que pueden citar personas no se conservan. Los tests lo comprueban.
 - **Repositorio público sin regalar el producto:** la web solo muestra 25 fichas por provincia y sin domicilio; los datos completos van cifrados con `DATA_KEY`.

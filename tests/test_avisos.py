@@ -80,3 +80,26 @@ def test_cifrado(tmp_path, monkeypatch):
     enc = (tmp_path / "privado" / "2026-11-03.json.gz.enc").read_bytes()
     assert b"SECRETO" not in enc
     assert almacen.cargar_completo("2026-11-03")["registros"][0]["x"] == "SECRETO"
+
+
+def test_prueba_recortada(entorno):
+    """En prueba: como mucho N sociedades (5 en producción), sin domicilio, sin enlace al BORME y sin CSV."""
+    almacen, avisos, tmp = entorno
+    from nacenempresas import suscriptores
+    regs = almacen.cargar_completo("2026-11-02")["registros"]
+    total = sum(1 for r in regs if r["es_constitucion"])
+    assert total == 3
+    sub = suscriptores.Suscriptor(id="sub_t", email="prueba@example.com", plan="pro", estado="trialing",
+                                  provincias=["03"], bienvenida_enviada=True, tiene_pago=True)
+    cartero = avisos.Cartero(prueba=True)
+    cartero.cfg = {**cartero.cfg, "precios": {**cartero.cfg["precios"], "empresas_prueba_dia": 2}}
+    stats = avisos.enviar_avisos(date(2026, 11, 2), [sub], cartero)
+    assert stats["diarios"] == 1
+    c = _correos(tmp)[0]
+    assert c["Subject"].startswith(f"{total} sociedades")  # el título enseña el total real
+    partes = list(c.walk())
+    assert not any(p.get_filename() for p in partes)  # sin CSV aunque sea Pro
+    html_ = next(p for p in partes if p.get_content_type() == "text/html").get_payload(decode=True).decode()
+    assert html_.count("<tr>") == 2
+    assert f"2 de {total}" in html_
+    assert "PTDA LA MARINA 22" not in html_ and "boe.es/x.pdf" not in html_
