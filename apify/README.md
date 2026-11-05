@@ -45,7 +45,7 @@ Leave dates empty to get the latest publication day.
 
 ## Pricing
 
-Pay per result. A typical day for all of Spain has about 500 new companies.
+Pay per result: **$1.50 per 1,000 records**, with no platform usage on top. A typical day for all of Spain has about 500 new companies (about $0.75); one province is usually a few cents. You can cap the cost of any run with the maximum charge option.
 
 ## Notes
 

@@ -34,7 +34,7 @@ Estado a 5/11/2026: **todo funciona y ya se puede cobrar.** Coste: 0 €.
 
 ## Opcional (cuando haya tiempo)
 
-- **Apify:** Actor `nacenempresas/spain-new-companies-borme` creado y probado, privado. Sin domicilio ni enlace al PDF del BORME. Se recompila solo en cada `git push`. Falta: tus datos de facturación y cobro en *Publishing > Monetization*; después, precio de 2 $ por 1.000 resultados (evento `result`) y publicar en la Store. Lo que te pague Apify (empresa extranjera) no lleva IGIC; coméntalo con la gestoría.
+- **Apify:** Actor `nacenempresas/spain-new-companies-borme` creado y probado, privado. Sin domicilio ni enlace al PDF del BORME. Se recompila solo en cada `git push`. Cobro activo: 1,50 $ por 1.000 resultados (evento automático por fila) más el evento de inicio de Apify; el uso de la plataforma lo paga NacenEmpresas (unos 0,04 $ por 1.000). Cobro por PayPal. Falta solo publicarlo en la Store. Lo que te pague Apify (empresa extranjera) no lleva IGIC; coméntalo con la gestoría.
 - **Afiliados:** solicita los programas de gestorías online, bancos de empresa y software de facturación, y pega tus enlaces en `config/sitio.json` > `afiliados`.
 - **Estadística de visitas:** cuenta gratis en GoatCounter y pon el código en `config/sitio.json` > `analitica`.
 - **Dominio propio** (`nacenempresas.es`, unos 10 €/año): el primer gasto que recomiendo, cuando entre el primer cliente.
