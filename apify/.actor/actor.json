@@ -14,7 +14,7 @@
       "views": {
         "overview": {
           "title": "Companies",
-          "transformation": {"fields": ["fecha_publicacion", "provincia", "denominacion", "forma_juridica", "tipo", "municipio", "sector", "capital", "objeto_social", "url_pdf"]},
+          "transformation": {"fields": ["fecha_publicacion", "provincia", "denominacion", "forma_juridica", "tipo", "municipio", "sector", "capital", "objeto_social", "borme_id"]},
           "display": {"component": "table"}
         }
       }

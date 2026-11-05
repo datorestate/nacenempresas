@@ -10,15 +10,21 @@ from nacenempresas.provincias import lista_provincias, normaliza
 
 EVENTO = "result"  # evento de cobro por resultado (pay-per-event en Apify Console)
 
+# Sin domicilio ni enlace al PDF del BORME (que lo contiene): eso es lo que se vende en la
+# suscripción de NacenEmpresas. El Actor da el resto, más el identificador del BORME.
+NUNCA = ("domicilio", "url_pdf")
+
 
 def _plano(r, ev):
     base = {k: r.get(k) for k in ("fecha_publicacion", "provincia", "provincia_codigo", "denominacion",
-                                  "forma_juridica", "borme_id", "url_pdf", "hoja_registral", "fecha_inscripcion")}
+                                  "forma_juridica", "borme_id", "hoja_registral", "fecha_inscripcion")}
     base.update({"tipo": ev["tipo"], "senal": ev["senal"], "acto": ev["acto"]})
-    for k in ("objeto_social", "domicilio", "municipio", "capital", "cnae", "sector", "comienzo_operaciones",
+    for k in ("objeto_social", "municipio", "capital", "cnae", "sector", "comienzo_operaciones",
               "organo_administracion", "unipersonal", "importe", "capital_resultante", "nueva_denominacion", "detalle"):
         if k in ev:
             base[k] = ev[k]
+    for k in NUNCA:
+        base.pop(k, None)
     return base
 
 

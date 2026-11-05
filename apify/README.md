@@ -4,9 +4,10 @@ Every working day Spain's Companies Registry Gazette (**BORME**) publishes hundr
 
 ## What you get
 
-- **New companies (incorporations):** name, legal form, province, municipality, registered address, corporate purpose, share capital, start of operations, CNAE when published, management type (sole/joint directors) and a **sector classification** (hospitality, construction, real estate, tech, health…).
+- **New companies (incorporations):** name, legal form, province, municipality, corporate purpose, share capital, start of operations, CNAE when published, management type (sole/joint directors) and a **sector classification** (hospitality, construction, real estate, tech, health…).
 - **Corporate events:** office moves, capital increases and reductions, name and purpose changes, new websites, mergers, dissolutions, liquidations, insolvency and registry closures, each tagged as an **opportunity** or **risk** signal.
-- Link to the official signed PDF for every record.
+- The official BORME identifier of every record, so you can check it at boe.es.
+- Need the registered address for postal mail or visits? It comes in the NacenEmpresas daily alerts: https://datorestate.github.io/nacenempresas
 
 ## GDPR-safe by design
 
@@ -36,9 +37,9 @@ Leave dates empty to get the latest publication day.
 {
   "fecha_publicacion": "2026-11-03", "provincia": "Málaga", "denominacion": "EJEMPLO GASTRO SL",
   "forma_juridica": "SL", "tipo": "constitucion", "senal": "oportunidad",
-  "municipio": "Marbella", "domicilio": "C/ EJEMPLO 1 (MARBELLA)", "capital": 3000.0,
+  "municipio": "Marbella", "capital": 3000.0,
   "objeto_social": "Explotación de bares y restaurantes", "sector": "hosteleria",
-  "organo_administracion": ["Adm. Unico"], "url_pdf": "https://www.boe.es/borme/dias/..."
+  "organo_administracion": ["Adm. Unico"], "borme_id": "BORME-A-2026-211-29"
 }
 ```
 
