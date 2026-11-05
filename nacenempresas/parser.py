@@ -171,7 +171,7 @@ _EXTRANJERAS = re.compile(
 def _forma_juridica(nombre: str):
     n = nombre.upper().rstrip(". ")
     n = re.sub(r"\s+EN LIQUIDACI[OÓ]N$", "", n)
-    n = re.sub(r"\s*\(R\.M\.\s*\d{4}\)$", "", n)
+    n = re.sub(r"\s*\(R\.M\.[^)]*\)$", "", n).rstrip(". ")
     for largo, corto in _FORMAS:
         if n.endswith(largo):
             return corto
@@ -225,9 +225,20 @@ def _detalle_seguro(contenido: str):
     return t
 
 
+_ARTICULO = re.compile(r"^(.*?)\s*\((LAS|LOS|LA|EL|L'|O|A|AS|OS|ELS|ES|SES|SA|LES)\)$", re.I)
+
+
 def _municipio(domicilio: str):
-    m = re.search(r"\(([^()]+)\)\s*\.?$", domicilio or "")
-    return m.group(1).strip().title() if m else None
+    """'C/ X 1 (PALMAS DE GRAN CANARIA (LAS)' -> 'Las Palmas De Gran Canaria'."""
+    d = (domicilio or "").strip().rstrip(".")
+    m = re.search(r"\(([^()]*(?:\([^()]*\))?[^()]*)\)?$", d)
+    if not m or not m.group(1).strip():
+        return None
+    muni = m.group(1).strip()
+    a = _ARTICULO.match(muni)
+    if a:
+        muni = f"{a.group(2)} {a.group(1)}" if not a.group(2).endswith("'") else f"{a.group(2)}{a.group(1)}"
+    return muni.title()
 
 
 def _segmentos(cuerpo: str):
@@ -255,6 +266,8 @@ def analizar_entrada(numero: int, lineas: list[str], contexto: dict) -> dict | N
     while resto and not nombre_l[-1].rstrip().endswith(".") and not _ACTO_RE.match(resto[0]):
         nombre_l.append(resto.pop(0))
     denominacion = " ".join(nombre_l).strip().rstrip(".").strip()
+    registro = re.search(r"\(R\.M\.\s*([^)]*)\)$", denominacion)
+    denominacion = re.sub(r"\s*\(R\.M\.[^)]*\)$", "", denominacion).strip()
     cuerpo = re.sub(r"\s+", " ", " ".join(resto)).strip()
     segs = _segmentos(cuerpo)
     tipos_acto = [s[0] for s in segs]

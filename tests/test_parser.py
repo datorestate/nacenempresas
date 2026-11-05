@@ -124,3 +124,25 @@ def test_pdf_formato_actual_con_cve_vertical(tmp_path):
     assert sum(r["es_constitucion"] for r in res["registros"]) == 3
     texto = json.dumps(res, ensure_ascii=False)
     assert "cve" not in texto and "ISSN" not in texto
+
+
+def test_formato_las_palmas_registro_y_municipio():
+    """Formato real de Las Palmas (octubre de 2026): '(R.M. LAS PALMAS)' tras la forma jurídica."""
+    texto = (
+        "450632 - BULL FILMS 2026, SOCIEDAD LIMITADA(R.M. LAS PALMAS).\n"
+        "Constitución. Comienzo de operaciones: 17.09.26. Objeto social: Actividades de producción cinematográfica y de vídeo.\n"
+        "Domicilio: C/ EJEMPLO, 1-INFECAR 35012 (PALMAS DE GRAN CANARIA (LAS). Capital: 100,00 Euros. Declaración de\n"
+        "unipersonalidad. Socio único: PEREZ GIL ANA. Nombramientos. Adm. Unico: PEREZ GIL ANA. Datos registrales. S 8 , H GC 67044, I/A 1 ( 2.10.26).\n"
+        "450633 - SPV EVERTON, SOCIEDAD LIMITADA(R.M. LAS PALMAS).\n"
+        "Ampliación de capital. Capital: 402.150,00 Euros. Resultante Suscrito: 3.635.250,00 Euros. Datos registrales. S 8 , H GC 58865, I/A 20 ( 1.10.26).\n"
+        "450634 - GUAGUAS MUNICIPALES SOCIEDAD ANONIMA(R.M. LAS PALMAS).\n"
+        "Nombramientos. Apo.Sol.: LOPEZ RUIZ ORLANDO. Datos registrales. S 8 , H GC 7323, I/A 107 ( 2.10.26).\n")
+    ctx = {"identificador": "BORME-A-2026-196-35", "provincia_codigo": "35", "fecha": "2026-10-09", "url_pdf": ""}
+    regs = [parser.analizar_entrada(n, l, ctx) for n, l in parser.separar_entradas(texto)]
+    assert all(regs), "ninguna sociedad debe descartarse"
+    bull = regs[0]
+    assert bull["denominacion"] == "BULL FILMS 2026, SOCIEDAD LIMITADA" and bull["forma_juridica"] == "SL"
+    c = bull["eventos"][0]
+    assert c["municipio"] == "Las Palmas De Gran Canaria" and c["capital"] == 100.0
+    assert regs[1]["forma_juridica"] == "SL" and regs[2]["forma_juridica"] == "SA"
+    assert "PEREZ" not in json.dumps(regs, ensure_ascii=False) and "ORLANDO" not in json.dumps(regs, ensure_ascii=False)
