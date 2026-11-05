@@ -1,0 +1,21 @@
+{% extends "calc_base.html" %}
+{% block formulario %}
+<form data-calc="constitucion" data-salida="resultado">
+  <label for="via">Cómo la vas a constituir</label>
+  <select id="via" name="via">
+    <option value="pae">Telemática en un PAE (CIRCE), con estatutos tipo</option>
+    <option value="online" selected>Gestoría online</option>
+    <option value="clasica">Notaría y gestoría tradicional, estatutos a medida</option>
+  </select>
+  <label for="socios">Número de socios</label>
+  <input id="socios" name="socios" inputmode="numeric" value="1">
+  <label for="capital">Capital social</label>
+  <input id="capital" name="capital" inputmode="decimal" value="3000">
+  <p class="ayuda">Desde la Ley 18/2022 el mínimo es 1 €.</p>
+</form>
+{% endblock %}
+{% block explicacion %}
+<h2 style="margin-top:2rem">Antes de ir al notario</h2>
+<p>Necesitas la certificación negativa de denominación del Registro Mercantil Central, que acredita que nadie usa ya ese nombre. Puedes pedirla en la <a href="https://www.rmc.es/" rel="nofollow">web del Registro Mercantil Central</a>; tarda de 1 a 3 días laborables y vale 6 meses para otorgar la escritura.</p>
+<p>La vía más barata es el <a href="https://paeelectronico.es/" rel="nofollow">Punto de Atención al Emprendedor</a> con estatutos tipo; la más flexible, estatutos propios en notaría.</p>
+{% endblock %}

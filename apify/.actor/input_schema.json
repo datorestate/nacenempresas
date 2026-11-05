@@ -1,0 +1,13 @@
+{
+  "title": "BORME input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "dateFrom": {"title": "From date", "type": "string", "editor": "datepicker", "description": "First BORME date (YYYY-MM-DD). Defaults to the latest publication day."},
+    "dateTo": {"title": "To date", "type": "string", "editor": "datepicker", "description": "Last BORME date (YYYY-MM-DD). Max 31 days per run."},
+    "provinces": {"title": "Provinces", "type": "array", "editor": "stringList", "description": "Province names or INE codes (e.g. Madrid, 29, Valencia). Empty = all of Spain.", "default": []},
+    "mode": {"title": "What to extract", "type": "string", "editor": "select", "enum": ["incorporations", "events", "all"], "enumTitles": ["New companies only", "Corporate events only (moves, capital, dissolutions, insolvency)", "Both"], "default": "incorporations"},
+    "sectors": {"title": "Sectors", "type": "array", "editor": "select", "items": {"type": "string", "enum": ["hosteleria", "turismo", "construccion", "inmobiliaria", "comercio", "transporte", "tecnologia", "consultoria", "marketing", "salud", "belleza", "deporte", "educacion", "industria", "agricultura", "energia", "automocion", "limpieza", "financiero", "otros"]}, "description": "Keep only incorporations in these sectors. Empty = all.", "default": []},
+    "keywords": {"title": "Keywords in corporate purpose", "type": "array", "editor": "stringList", "description": "Keep only records whose name or corporate purpose contains any of these words.", "default": []}
+  }
+}

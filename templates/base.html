@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ titulo }}</title>
+<meta name="description" content="{{ descripcion }}">
+<link rel="canonical" href="{{ cfg.url_base }}/{{ ruta }}">
+<meta property="og:title" content="{{ titulo }}">
+<meta property="og:description" content="{{ descripcion }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ cfg.url_base }}/{{ ruta }}">
+<meta name="theme-color" content="#14213D">
+{% if cfg.google_verificacion %}<meta name="google-site-verification" content="{{ cfg.google_verificacion }}">{% endif %}
+<link rel="icon" href="{{ raiz }}static/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ raiz }}static/estilo.css">
+{% if jsonld %}<script type="application/ld+json">{{ jsonld | tojson }}</script>{% endif %}
+</head>
+<body>
+<header class="cab"><div class="envoltura">
+  <a class="marca" href="{{ raiz }}index.html">Nacen<span>Empresas</span></a>
+  <nav class="nav" aria-label="Principal">
+    <a href="{{ raiz }}provincias/index.html">Provincias</a>
+    <a href="{{ raiz }}index.html#tarifas">Tarifas</a>
+    <a href="{{ raiz }}calculadoras/index.html">Calculadoras</a>
+    <a href="{{ raiz }}informe.html">Informe semanal</a>
+  </nav>
+</div></header>
+{% if cfg.vista_previa %}<p class="nota envoltura" style="margin:1rem auto">Vista previa con datos de ejemplo. En producción se muestran las sociedades reales del BORME.</p>{% endif %}
+<main class="envoltura">
+{% block contenido %}{% endblock %}
+</main>
+<footer class="envoltura pie">
+  <nav aria-label="Legal">
+    <a href="{{ raiz }}aviso-legal.html">Aviso legal</a>
+    <a href="{{ raiz }}privacidad.html">Privacidad</a>
+    <a href="{{ raiz }}condiciones.html">Condiciones del servicio</a>
+    <a href="{{ raiz }}retirada.html">Solicitar retirada de datos</a>
+    <a href="mailto:{{ cfg.email_contacto }}">{{ cfg.email_contacto }}</a>
+  </nav>
+  <p>{{ cfg.nombre }} es un servicio hecho en Canarias para empresas y profesionales de toda España.</p>
+  <p>Fuente: Boletín Oficial del Registro Mercantil, Agencia Estatal BOE (<a href="https://www.boe.es">boe.es</a>). {{ cfg.nombre }} no es un servicio oficial ni está vinculado a la Agencia Estatal BOE. Solo mostramos datos de sociedades, nunca de personas físicas. Las calculadoras son orientativas y no constituyen asesoramiento fiscal ni jurídico.</p>
+</footer>
+{% if cfg.analitica.goatcounter %}<script data-goatcounter="https://{{ cfg.analitica.goatcounter }}.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

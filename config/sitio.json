@@ -1,0 +1,53 @@
+{
+  "nombre": "NacenEmpresas",
+  "lema": "Las empresas que nacen hoy en tu provincia, en tu correo mañana a primera hora",
+  "url_base": "https://datorestate.github.io/nacenempresas",
+  "email_contacto": "datorestate@gmail.com",
+  "titular": "NOMBRE Y APELLIDOS DEL TITULAR",
+  "nif_titular": "NIF DEL TITULAR",
+  "domicilio_titular": "DOMICILIO DEL TITULAR (Canarias)",
+  "precios": {
+    "basico_mes": 19,
+    "basico_anio": 190,
+    "pro_mes": 49,
+    "pro_anio": 490,
+    "lista": 29,
+    "dias_prueba": 14
+  },
+  "afiliados": {
+    "_nota": "Sustituye cada url por tu enlace de afiliado cuando te acepten en el programa. Si se deja vacía, se usa la web oficial sin comisión.",
+    "gestoria_online": {
+      "nombre": "Gestoría online para constituir tu SL",
+      "url": "",
+      "oficial": "https://paeelectronico.es/"
+    },
+    "banco_empresas": {
+      "nombre": "Cuenta de empresa para depositar el capital",
+      "url": "",
+      "oficial": "https://www.bde.es/"
+    },
+    "facturacion": {
+      "nombre": "Programa de facturación compatible con Veri*factu",
+      "url": "",
+      "oficial": "https://sede.agenciatributaria.gob.es/"
+    },
+    "seguros": {
+      "nombre": "Seguro de responsabilidad civil para empresas",
+      "url": "",
+      "oficial": "https://www.dgsfp.mineco.es/"
+    }
+  },
+  "analitica": {
+    "_nota": "GoatCounter es gratis y no necesita banner de cookies. Pon tu código (ej. 'nacenempresas') tras crear la cuenta.",
+    "goatcounter": ""
+  },
+  "revision_fiscal": "2026-11-05",
+  "google_verificacion": "",
+  "fiscal": {
+    "_nota": "Prestador establecido en Canarias. Precios sin impuestos indirectos. Mientras igic_pequeno_empresario sea true (régimen especial del pequeño empresario o profesional, hasta 50.000 € de volumen de operaciones), no se repercute IGIC a nadie. Si dejas el régimen, pon false: a los clientes canarios se les sumará el IGIC al tipo indicado. Revisa los textos con tu gestoría.",
+    "territorio": "Canarias",
+    "igic_pequeno_empresario": true,
+    "igic_tipo": 7,
+    "solo_empresas": true
+  }
+}

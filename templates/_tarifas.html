@@ -1,0 +1,41 @@
+<section class="seccion" id="tarifas">
+  <h2>Tarifas</h2>
+  <p class="tenue">Prueba {{ cfg.precios.dias_prueba }} días gratis, sin tarjeta. Si no añades una forma de pago, la prueba termina sola. Sin permanencia: te das de baja desde el portal del cliente.</p>
+  <div class="tarifas">
+    <article class="tarifa">
+      <h3>Básico</h3>
+      <p class="precio">{{ cfg.precios.basico_mes }} € <small>/ mes</small></p>
+      <ul>
+        <li>1 provincia (o Canarias entera: las dos provincias)</li>
+        <li>Filtro por actividad o palabras clave</li>
+        <li>Aviso cada mañana laborable o resumen semanal</li>
+        <li>Domicilio completo, objeto social y capital</li>
+      </ul>
+      <a class="boton" href="{{ links.basico_mes }}">Empezar la prueba gratis</a>
+      <p class="alterna"><a href="{{ links.basico_anio }}">Pago anual: {{ cfg.precios.basico_anio }} € al año (2 meses gratis)</a></p>
+    </article>
+    <article class="tarifa destacada">
+      <h3>Pro</h3>
+      <p class="precio">{{ cfg.precios.pro_mes }} € <small>/ mes</small></p>
+      <ul>
+        <li>Hasta 5 provincias</li>
+        <li>CSV listo para Excel o tu CRM en cada envío</li>
+        <li>Señales de empresas existentes: traslados, ampliaciones de capital, nuevas webs, disoluciones y concursos</li>
+        <li>Todo lo del plan Básico</li>
+      </ul>
+      <a class="boton" href="{{ links.pro_mes }}">Empezar la prueba gratis</a>
+      <p class="alterna"><a href="{{ links.pro_anio }}">Pago anual: {{ cfg.precios.pro_anio }} € al año (2 meses gratis)</a></p>
+    </article>
+    <article class="tarifa">
+      <h3>Lista puntual</h3>
+      <p class="precio">{{ cfg.precios.lista }} € <small>pago único</small></p>
+      <ul>
+        <li>Todas las sociedades creadas en los últimos 30 días en una provincia o en toda Canarias</li>
+        <li>Filtrada por actividad si lo indicas</li>
+        <li>CSV en tu correo en menos de 24 horas laborables</li>
+      </ul>
+      <a class="boton secundario" href="{{ links.lista }}">Comprar la lista</a>
+    </article>
+  </div>
+  <p class="peq tenue" style="margin-top:1.2rem">{{ nota_fiscal }}</p>
+</section>

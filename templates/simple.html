@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block contenido %}
+<div class="legal">
+{{ cuerpo | safe }}
+</div>
+{% endblock %}
+{% block scripts %}{% if script %}<script src="{{ raiz }}static/calc.js"></script>{% endif %}{% endblock %}

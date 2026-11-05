@@ -1,0 +1,21 @@
+{% extends "calc_base.html" %}
+{% block formulario %}
+<form data-calc="sl" data-salida="resultado">
+  <label for="beneficio">Beneficio anual previsto (ingresos menos gastos)</label>
+  <input id="beneficio" name="beneficio" inputmode="decimal" value="45000">
+  <p class="ayuda">Antes de cuota de autónomos, sueldos de socios e impuestos.</p>
+  <label for="gestoria">Coste extra anual de llevar una SL</label>
+  <input id="gestoria" name="gestoria" inputmode="decimal" value="1200">
+  <p class="ayuda">Gestoría, depósito de cuentas y libros. Entre 900 y 2.000 € es habitual.</p>
+  <label><input type="checkbox" name="nueva" checked style="width:auto"> SL de nueva creación (15 % en los dos primeros años con beneficio)</label>
+  <label><input type="checkbox" name="ric" style="width:auto"> SL en Canarias: dotar la RIC con el beneficio que no repartes</label>
+</form>
+{% endblock %}
+{% block explicacion %}
+<h2 style="margin-top:2rem">Cómo leer el resultado</h2>
+<p>Como autónomo, todo el beneficio tributa en tu IRPF, que llega al 47 % en el tramo alto. En una SL, la sociedad paga el Impuesto sobre Sociedades y tú solo tributas por el sueldo que te asignas y por los dividendos que repartes. Por eso la SL suele compensar a partir de 40.000–60.000 € de beneficio, sobre todo si no necesitas sacar todo el dinero cada año.</p>
+<p>En 2026 la base mínima de los autónomos societarios es de 1.424,40 € al mes, frente a los 1.000 € de 2025: es el coste fijo que más pesa en beneficios bajos.</p>
+<h2 style="margin-top:2rem">Si vas a crear la empresa en Canarias</h2>
+<p>La Reserva para Inversiones en Canarias (RIC) permite reducir la base del Impuesto sobre Sociedades hasta en el 90 % del beneficio que la sociedad no reparte, a cambio de invertirlo en Canarias en 3 años. Es la razón más habitual para pasar a SL antes en las islas. La Zona Especial Canaria (ZEC) baja el impuesto al 4 %, pero exige inversión mínima y crear empleo, así que no suele encajar en un proyecto que empieza.</p>
+<p>Como autónomo en Canarias tienes además la cuota cero, que devuelve la tarifa plana del primer año, y la exención de IGIC del pequeño empresario hasta 50.000 €.</p>
+{% endblock %}

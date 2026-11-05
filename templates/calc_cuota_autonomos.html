@@ -1,0 +1,24 @@
+{% extends "calc_base.html" %}
+{% block formulario %}
+<form data-calc="cuota" data-salida="resultado">
+  <label for="rendimiento">Rendimiento neto mensual previsto</label>
+  <input id="rendimiento" name="rendimiento" inputmode="decimal" value="1800">
+  <p class="ayuda">Ingresos menos gastos de la actividad, al mes.</p>
+  <label for="tipo">Tipo de autónomo</label>
+  <select id="tipo" name="tipo">
+    <option value="persona">Persona física</option>
+    <option value="societario">Societario (administrador o socio de una SL)</option>
+  </select>
+  <label><input type="checkbox" name="plana" style="width:auto"> Me doy de alta por primera vez (tarifa plana)</label>
+  <label><input type="checkbox" name="canarias" style="width:auto"> Vivo y trabajo en Canarias (cuota cero)</label>
+</form>
+{% endblock %}
+{% block explicacion %}
+<h2 style="margin-top:2rem">Tabla de tramos 2026</h2>
+<p>En 2026 siguen los tramos de 2025, prorrogados por el Real Decreto-ley 3/2026, con el Mecanismo de Equidad Intergeneracional al 0,9 %. El tipo total es del 31,5 % sobre la base elegida.</p>
+<div class="desplaza"><table class="tabla">
+<thead><tr><th>Tramo</th><th>Rendimiento neto mensual</th><th>Cuota mínima</th></tr></thead>
+<tbody>
+{% for t in tramos %}<tr><td>{{ loop.index }}</td><td>{{ t[0] }}</td><td>{{ t[1] }}</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block contenido %}
+<p class="migas"><a href="{{ raiz }}index.html">Inicio</a> / <a href="{{ raiz }}provincias/index.html">Provincias</a>{% if sector %} / <a href="{{ raiz }}provincias/{{ slug }}.html">{{ provincia }}</a>{% endif %}</p>
+<h1>{{ h1 }}</h1>
+<p class="bajada tenue">{{ total_30 }} sociedades nuevas en los últimos 30 días{% if ultimo_dia %}, la última publicada en el BORME del {{ ultimo_dia }}{% endif %}. Datos de sociedades, sin personas físicas.</p>
+
+<div class="cta-franja">
+  <div><h2>Recíbelas cada mañana</h2><p>{% if subtitulo_cta %}{{ subtitulo_cta }}{% else %}Con domicilio completo, objeto social y capital{% if sector %}, solo de {{ sector_nombre|lower }}{% endif %}.{% endif %}</p></div>
+  <a class="boton" href="{{ raiz }}index.html#tarifas">Probar {{ cfg.precios.dias_prueba }} días gratis</a>
+</div>
+
+{% if filas %}
+<div class="desplaza">
+<table class="tabla">
+  <thead><tr><th>Sociedad</th><th>Municipio</th><th class="ocultable">Actividad</th><th>Publicada</th></tr></thead>
+  <tbody>
+  {% for e in filas %}
+    <tr><td>{{ e.denominacion }}</td><td>{{ e.municipio or "—" }}{% if mostrar_provincia and e.provincia_nombre and (e.provincia_nombre|lower) not in ((e.municipio or "")|lower) %}<br><span class="peq tenue">{{ e.provincia_nombre }}</span>{% endif %}</td>
+      <td class="ocultable">{{ e.objeto }}</td><td>{{ e.fecha_corta }}</td></tr>
+  {% endfor %}
+  {% for e in bloqueadas %}
+    <tr class="bloqueado" aria-hidden="true"><td>{{ e.denominacion }}</td><td>{{ e.municipio or "—" }}</td>
+      <td class="ocultable">{{ e.objeto }}</td><td>{{ e.fecha_corta }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if bloqueadas %}<p class="tenue peq">Mostramos las {{ filas|length }} más recientes. Las {{ total_30 - filas|length }} restantes de los últimos 30 días están en la <a href="{{ raiz }}index.html#tarifas">lista puntual</a> o en los avisos.</p>{% endif %}
+{% else %}
+<p>Aún no hay constituciones registradas en este periodo. Las próximas aparecerán aquí cuando se publiquen en el BORME.</p>
+{% endif %}
+
+{% if enlaces_extra %}
+<section class="seccion">
+  <h2>Por provincia</h2>
+  <ul class="fichas">
+  {% for url, texto in enlaces_extra %}<li><a href="{{ raiz }}provincias/{{ url }}">{{ texto }}</a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% if sectores %}
+<section class="seccion">
+  <h2>Por sector en {{ provincia }}</h2>
+  <ul class="fichas">
+  {% for s in sectores %}<li><a href="{{ raiz }}provincias/{{ slug }}/{{ s.clave }}.html">{{ s.nombre }} ({{ s.n }})</a></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

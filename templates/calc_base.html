@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block contenido %}
+<p class="migas"><a href="{{ raiz }}index.html">Inicio</a> / <a href="{{ raiz }}calculadoras/index.html">Calculadoras</a></p>
+<h1>{{ h1 }}</h1>
+<p class="bajada tenue">{{ entradilla }}</p>
+<div class="calc">
+  {% block formulario %}{% endblock %}
+  <div>
+    <div class="resultado" id="resultado" aria-live="polite"></div>
+    {% block explicacion %}{% endblock %}
+    {% for a in siguientes %}
+    <div class="siguiente"><strong>Siguiente paso:</strong> <a href="{{ a.url }}" rel="{{ a.rel }}">{{ a.nombre }}</a></div>
+    {% endfor %}
+    <p class="peq tenue">Revisado el {{ cfg.revision_fiscal }}. Normativa: {{ normativa }}. Cifras orientativas; no es asesoramiento fiscal ni jurídico.</p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ raiz }}static/calc.js"></script>{% endblock %}

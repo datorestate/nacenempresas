@@ -1,0 +1,32 @@
+{% extends "calc_base.html" %}
+{% block formulario %}
+<form data-calc="factura" data-salida="resultado">
+  <label for="base">Importe de la factura sin impuestos</label>
+  <input id="base" name="base" inputmode="decimal" value="1000">
+  <label for="territorio">Dónde facturas</label>
+  <select id="territorio" name="territorio">
+    <option value="peninsula"{% if territorio_defecto == "peninsula" %} selected{% endif %}>Península o Baleares (IVA)</option>
+    <option value="canarias"{% if territorio_defecto == "canarias" %} selected{% endif %}>Canarias (IGIC)</option>
+    <option value="canarias_peninsula"{% if territorio_defecto == "canarias_peninsula" %} selected{% endif %}>Desde Canarias a la Península</option>
+  </select>
+  <label for="iva" id="etiqueta-impuesto">Impuesto</label>
+  <select id="iva" name="iva"></select>
+  <label for="retencion">Retención de IRPF</label>
+  <select id="retencion" name="retencion"><option value="15">15 % general</option><option value="7">7 % nuevo autónomo (año de alta y 2 siguientes)</option><option value="0">Sin retención (cliente particular)</option></select>
+  <label for="ingresos">Ingresos acumulados del año hasta este trimestre</label>
+  <input id="ingresos" name="ingresos" inputmode="decimal" value="12000">
+  <label for="gastos">Gastos deducibles acumulados</label>
+  <input id="gastos" name="gastos" inputmode="decimal" value="3000">
+  <label for="retenciones">Retenciones que te han practicado en el año</label>
+  <input id="retenciones" name="retenciones" inputmode="decimal" value="900">
+  <label for="previos">Pagos del 130 en trimestres anteriores</label>
+  <input id="previos" name="previos" inputmode="decimal" value="0">
+</form>
+{% endblock %}
+{% block explicacion %}
+{% if territorio_defecto != "peninsula" %}
+<h2 style="margin-top:2rem">Facturar desde Canarias</h2>
+<p>En Canarias no se aplica el IVA sino el IGIC, con un tipo general del 7 %. Si facturas a una empresa de la Península o Baleares, el servicio se entiende prestado donde está tu cliente: no repercutes IGIC ni IVA, y es tu cliente quien autoliquida el IVA por inversión del sujeto pasivo.</p>
+<p>Desde el 1 de julio de 2026, los autónomos canarios con un volumen de operaciones de hasta 50.000 € pueden acogerse al régimen especial del pequeño empresario: no repercuten IGIC y, a cambio, no deducen el que soportan. Se solicita con el modelo 400 ante la Agencia Tributaria Canaria. El Gobierno de Canarias prevé que desde 2027 presenten una sola declaración anual de IGIC en lugar de las trimestrales.</p>
+{% endif %}
+{% endblock %}

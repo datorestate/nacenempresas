@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block contenido %}
+<section class="portada">
+  <div>
+    <h1>Las sociedades que se inscriben hoy en tu provincia, en tu correo mañana a primera hora</h1>
+    <p class="bajada">Cada día laborable el BORME publica cientos de empresas nuevas. Te enviamos las de tu zona y tu sector, con domicilio, actividad y capital, para que llegues antes que nadie.</p>
+    <div class="acciones">
+      <a class="boton" href="#tarifas">Probar {{ cfg.precios.dias_prueba }} días gratis</a>
+      <a class="boton secundario" href="provincias/index.html">Ver las de mi provincia</a>
+    </div>
+    <ul class="garantias">
+      <li>Sin tarjeta durante la prueba y sin permanencia</li>
+      <li>Datos oficiales del BORME, limpios y clasificados por sector</li>
+      <li>Solo sociedades: nunca datos de personas físicas</li>
+    </ul>
+  </div>
+  <aside class="pliego" aria-label="Últimas sociedades constituidas">
+    <span class="sello">{{ ultimo.total_constituciones }} nuevas</span>
+    <header><strong>Constituciones</strong><span>BORME del {{ ultimo.fecha_larga }}</span></header>
+    <ol>
+    {% for e in muestra %}
+      <li><span class="den">{{ e.denominacion }}</span> <span class="lugar">{% if e.municipio and e.municipio.split("/")[0]|lower != e.provincia_nombre.split("/")[0]|lower %}{{ e.municipio }}, {% endif %}{{ e.provincia_nombre }}</span>
+        <span class="obj">{{ e.objeto[:110] }}{% if e.objeto|length > 110 %}…{% endif %}</span></li>
+    {% endfor %}
+    </ol>
+  </aside>
+</section>
+
+<section class="seccion">
+  <h2>Para quien vende a empresas que acaban de nacer</h2>
+  <div class="para-quien">
+    <div><h3>Gestorías y asesorías</h3><p>Una SL nueva necesita contabilidad, nóminas e impuestos desde el primer trimestre. Llega antes de que elija gestor.</p></div>
+    <div><h3>Corredurías de seguros</h3><p>Responsabilidad civil, local, flota, salud de los socios. Filtra por actividad y prioriza las de más capital.</p></div>
+    <div><h3>Agencias web y de marketing</h3><p>Las empresas recién creadas aún no tienen web ni marca. El objeto social te dice qué necesitan.</p></div>
+    <div><h3>Proveedores y comerciales de banca</h3><p>Hostelería, construcción, transporte: recibe solo las de tu sector y tu zona, con su domicilio.</p></div>
+  </div>
+  <div class="cifras">
+    <div><b>{{ "{:,}".format(total_30).replace(",", ".") }}</b><span class="tenue">sociedades nuevas en los últimos 30 días</span></div>
+    <div><b>{{ dias_30 }}</b><span class="tenue">boletines procesados</span></div>
+    <div><b>52</b><span class="tenue">provincias cubiertas</span></div>
+  </div>
+</section>
+
+<section class="seccion">
+  <h2>Cómo funciona</h2>
+  <ol>
+    <li><p><strong>Eliges provincia y actividad.</strong> Por ejemplo, «hostelería en Málaga» o «reformas en Valencia». Si no eliges actividad, recibes todas.</p></li>
+    <li><p><strong>Cada mañana laborable procesamos el BORME.</strong> Extraemos las constituciones de los PDF oficiales y las clasificamos por sector.</p></li>
+    <li><p><strong>Te llega un correo con las que encajan.</strong> Denominación, domicilio, objeto social, capital y enlace a la fuente. En Pro, también un CSV.</p></li>
+  </ol>
+</section>
+
+{% include "_tarifas.html" %}
+
+<section class="seccion">
+  <h2>Preguntas frecuentes</h2>
+  {% for p, r in faq %}<details><summary>{{ p }}</summary><p>{{ r }}</p></details>{% endfor %}
+</section>
+{% endblock %}
