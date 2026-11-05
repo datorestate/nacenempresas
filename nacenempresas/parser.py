@@ -179,9 +179,26 @@ def _forma_juridica(nombre: str):
     if m:
         f = re.sub(r"[\.\s]", "", m.group(1))
         return "COOP" if f.startswith("SCOOP") else f
+    # Formas que no van al final del nombre: "SOCIEDAD COOPERATIVA DE CREDITO", "SOCIEDAD AGRARIA DE TRANSFORMACION N.º 123"...
+    for patron, corto in _FORMAS_INTERIORES:
+        if re.search(patron, n):
+            return corto
     if _EXTRANJERAS.search(n):
         return "EXTRANJERA/OTRA"
     return None
+
+
+_FORMAS_INTERIORES = [
+    (r"\bSOCIEDAD COOPERATIVA\b|\bS\.? ?COOP\b|\bCOOPERATIVA\b", "COOP"),
+    (r"\bSOCIEDAD AGRARIA DE TRANSFORMACI[OÓ]N\b|\bS\.?A\.?T\.?\b", "SAT"),
+    (r"\bSOCIEDAD DE INVERSI[OÓ]N DE CAPITAL VARIABLE\b|\bSICAV\b", "SICAV"),
+    (r"\bSOCIEDAD DE RESPONSABILIDAD LIMITADA\b", "SL"),
+    (r"\bSOCIEDAD COMANDITARIA\b|\bS\.? ?EN C\b", "SCOM"),
+    (r"\bSOCIEDAD COLECTIVA\b", "SCOL"),
+    (r"\bMUTUA\b|\bMUTUALIDAD\b", "MUTUA"),
+    (r"\bSOCIEDAD DE GARANT[IÍ]A REC[IÍ]PROCA\b|\bS\.?G\.?R\b", "SGR"),
+    (r"\bFONDO DE\b", "FONDO"),
+]
 
 
 # ---------------------------------------------------------------- utilidades
@@ -356,11 +373,13 @@ def analizar_pdf(pdf: bytes | str, identificador: str, provincia_codigo: str,
     entradas = separar_entradas(texto)
     ctx = {"identificador": identificador, "provincia_codigo": provincia_codigo,
            "fecha": fecha, "url_pdf": url_pdf}
-    registros, descartadas, sin_actos = [], 0, 0
+    registros, descartadas, individuales, sin_actos = [], 0, 0, 0
     for numero, lineas in entradas:
         r = analizar_entrada(numero, lineas, ctx)
         if r is None:
             descartadas += 1
+            if any("Empresario Individual" in l for l in lineas[:3]):
+                individuales += 1  # descarte deliberado, no es un fallo de lectura
             continue
         if not r["actos"]:
             sin_actos += 1
@@ -371,7 +390,9 @@ def analizar_pdf(pdf: bytes | str, identificador: str, provincia_codigo: str,
         "registros": len(registros),
         "descartadas_persona_fisica": descartadas,
         "sin_actos_reconocidos": sin_actos,
-        "porcentaje_reconocido": round(100 * (len(registros) - sin_actos) / total, 1) if total else 100.0,
+        "empresarios_individuales": individuales,
+        "porcentaje_reconocido": round(100 * (len(registros) - sin_actos) / (total - individuales), 1)
+        if total - individuales > 0 else 100.0,
     }
     return {"registros": registros, "calidad": calidad}
 

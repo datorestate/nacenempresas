@@ -146,3 +146,11 @@ def test_formato_las_palmas_registro_y_municipio():
     assert c["municipio"] == "Las Palmas De Gran Canaria" and c["capital"] == 100.0
     assert regs[1]["forma_juridica"] == "SL" and regs[2]["forma_juridica"] == "SA"
     assert "PEREZ" not in json.dumps(regs, ensure_ascii=False) and "ORLANDO" not in json.dumps(regs, ensure_ascii=False)
+
+
+def test_formas_juridicas_interiores():
+    from nacenempresas.parser import _forma_juridica
+    assert _forma_juridica("CAJA RURAL DE JAEN, BARCELONA Y MADRID, SOCIEDAD COOPERATIVA DE CREDITO") == "COOP"
+    assert _forma_juridica("SOCIEDAD AGRARIA DE TRANSFORMACION NUM 1234 LOS OLIVOS") == "SAT"
+    assert _forma_juridica("INVERSIONES ALFA SICAV SA") == "SA"
+    assert _forma_juridica("GARCIA LOPEZ ANTONIO") is None
