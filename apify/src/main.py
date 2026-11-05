@@ -40,7 +40,8 @@ async def main():
         while d >= desde:
             dias.append(d)
             d -= timedelta(days=1)
-        for dia in sorted(dias):
+        # Sin fechas: el día publicado más reciente (se recorre de hoy hacia atrás)
+        for dia in sorted(dias, reverse=solo_ultimo):
             docs = [x for x in borme_api.documentos_seccion_a(dia, sesion) if not provs or x.provincia_codigo in provs]
             if not docs:
                 continue
