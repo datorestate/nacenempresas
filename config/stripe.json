@@ -1,0 +1,11 @@
+{
+  "basico_mes": "https://buy.stripe.com/28EeVcaxRb7UchK5lt7Vm00?locale=es",
+  "basico_anio": "https://buy.stripe.com/8x214mgWffoa6Xq7tB7Vm01?locale=es",
+  "pro_mes": "https://buy.stripe.com/5kQaEW49t1xkbdG4hp7Vm02?locale=es",
+  "pro_anio": "https://buy.stripe.com/7sYaEWfSb7VIftWbJR7Vm03?locale=es",
+  "lista": "https://buy.stripe.com/7sY5kCcFZdg295y3dl7Vm04?locale=es",
+  "lista_id": "plink_1UYOq0CAA1DILvq7tpYK5hpi",
+  "portal": "https://billing.stripe.com/p/login/28EeVcaxRb7UchK5lt7Vm00",
+  "igic_tax_rate": "txr_1UYOpyCAA1DILvq7TLDDKMn5",
+  "modo": "live"
+}
