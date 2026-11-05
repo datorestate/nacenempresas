@@ -24,7 +24,10 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add config/stripe.json
           git diff --cached --quiet || git commit -m "Enlaces de pago de Stripe"
-          git push
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash -q origin main && git push -q origin HEAD:main && break
+            sleep $((i * 5))
+          done
   web:
     needs: configurar
     uses: ./.github/workflows/_publicar.yml
