@@ -17,4 +17,4 @@
 
 ## Código de descuento
 
-En Stripe, Productos > Cupones > Crear (por ejemplo, 20 % durante 3 meses), y después un código de promoción como `COLEGIO20`. Ya funciona en todos los enlaces de pago.
+Ya creado en Stripe: cupón "Colegios: 20 % durante 3 meses" con los códigos `GESTORESCANARIAS` (colegios y cámaras de Canarias) y `COLEGIO20` (resto de España). Se escriben en "Añadir código" de cualquier enlace de pago. Para un colegio concreto, añade otro código al mismo cupón en Stripe > Catálogo de productos > Cupones (por ejemplo `GESTORESMALAGA`) y así sabrás de dónde viene cada alta.

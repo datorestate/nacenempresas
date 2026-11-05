@@ -38,5 +38,7 @@ try:
     r = urllib.request.urlopen(req, timeout=60)
     print(f"IndexNow: {len(urls)} URL enviadas, respuesta {r.status}")
 except urllib.error.HTTPError as e:
-    print(f"IndexNow respondió {e.code}: {e.read()[:300]!r}")
-    sys.exit(0 if e.code in (202, 429) else 1)
+    detalle = e.read()[:300]
+    print(f"IndexNow respondió {e.code}: {detalle!r}")
+    # 403 SiteVerificationNotCompleted: la primera vez Bing tarda en comprobar la clave; se reintenta en la próxima publicación
+    sys.exit(0 if e.code in (202, 429) or b"SiteVerificationNotCompleted" in detalle else 1)
