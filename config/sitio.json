@@ -3,9 +3,9 @@
   "lema": "Las empresas que nacen hoy en tu provincia, en tu correo mañana a primera hora",
   "url_base": "https://datorestate.github.io/nacenempresas",
   "email_contacto": "datorestate@gmail.com",
-  "titular": "NOMBRE Y APELLIDOS DEL TITULAR",
-  "nif_titular": "NIF DEL TITULAR",
-  "domicilio_titular": "DOMICILIO DEL TITULAR (Canarias)",
+  "titular": "Juan Jesús Dávila Torres",
+  "nif_titular": "",
+  "domicilio_titular": "Calle Fernando Sagaseta 42, 5, 35220 Telde (Las Palmas)",
   "precios": {
     "basico_mes": 19,
     "basico_anio": 190,

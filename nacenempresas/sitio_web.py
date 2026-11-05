@@ -278,6 +278,9 @@ def construir(hoy: date | None = None):
         bruto = (RAIZ / "legal" / f"{nombre_f}.html").read_text("utf-8")
         for k in ("nombre", "titular", "nif_titular", "domicilio_titular", "email_contacto", "url_base"):
             bruto = bruto.replace("{{" + k + "}}", html.escape(str(cfg[k])))
+        nif = cfg.get("nif_titular") or ""
+        bruto = bruto.replace("{{linea_nif}}", f"<li><strong>NIF:</strong> {html.escape(nif)}</li>\n" if nif else "")
+        bruto = bruto.replace("{{coma_nif}}", f", NIF {html.escape(nif)}" if nif else "")
         bruto = bruto.replace("{{portal}}", html.escape(links["portal"] or f"mailto:{cfg['email_contacto']}"))
         titulo = bruto.split("<h1>")[1].split("</h1>")[0] if "<h1>" in bruto else nombre_f
         escribe(f"{nombre_f}.html", "simple.html", "0.2", titulo=f"{titulo} | NacenEmpresas",
