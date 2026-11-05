@@ -1,0 +1,51 @@
+name: Diagnóstico del extractor
+
+# Muestra el texto y el resultado del extractor para un PDF concreto del BORME.
+on:
+  workflow_dispatch:
+    inputs:
+      fecha:
+        description: "Fecha AAAA-MM-DD"
+        required: true
+      provincia:
+        description: "Código de provincia (ej. 35)"
+        required: true
+      lineas:
+        description: "Líneas de texto a mostrar"
+        default: "60"
+
+jobs:
+  diagnostico:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Diagnóstico
+        env:
+          FECHA: ${{ github.event.inputs.fecha }}
+          PROV: ${{ github.event.inputs.provincia }}
+          LINEAS: ${{ github.event.inputs.lineas }}
+        run: |
+          python - <<'PY'
+          import os, re
+          from datetime import date
+          from nacenempresas import borme_api, parser
+          dia = date.fromisoformat(os.environ["FECHA"])
+          docs = [d for d in borme_api.documentos_seccion_a(dia) if d.provincia_codigo == os.environ["PROV"].zfill(2)]
+          print("Documentos:", [d.identificador for d in docs])
+          for d in docs:
+              pdf = borme_api.descargar_pdf(d)
+              texto = parser.pdf_a_texto(pdf)
+              lineas = texto.split("\n")
+              # Solo cabeceras de entrada y actos: sin nombres de personas
+              for l in lineas[: int(os.environ["LINEAS"])]:
+                  if re.match(r"^\d{1,7} - ", l):
+                      print("ENTRADA |", l[:120])
+                  else:
+                      print("        |", re.sub(r"[A-ZÁÉÍÓÚÑ]{3,}(?:\s+[A-ZÁÉÍÓÚÑ]{2,})+", "<MAYUS>", l)[:160])
+              res = parser.analizar_pdf(pdf, d.identificador, d.provincia_codigo, d.fecha, d.url_pdf)
+              print(res["calidad"])
+          PY

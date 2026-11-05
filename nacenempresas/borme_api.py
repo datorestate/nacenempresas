@@ -46,7 +46,8 @@ def _get(sesion, url, accept, intentos=4):
     for i in range(intentos):
         try:
             r = sesion.get(url, headers={"Accept": accept}, timeout=60)
-            if r.status_code == 404:
+            if r.status_code in (400, 404, 410):
+                # día sin BORME (fin de semana o festivo) o parámetro no válido
                 return None
             if r.status_code >= 500:
                 raise requests.HTTPError(f"{r.status_code} en {url}")
@@ -106,16 +107,18 @@ def documentos_seccion_a(dia: date, sesion=None) -> list[DocumentoA]:
             _de_json(r.json(), fecha_iso, salida)
         except ValueError:
             _de_xml(r.content, fecha_iso, salida)
-    if not salida:
-        # Respaldo: sumario XML clásico
-        r2 = _get(sesion, LEGACY_XML.format(fecha=f), "application/xml")
-        if r2 is not None and r2.content.strip().startswith(b"<"):
-            try:
+    if not salida and r is not None:
+        # Respaldo solo si la API respondió pero sin documentos reconocibles
+        try:
+            r2 = _get(sesion, LEGACY_XML.format(fecha=f), "application/xml")
+            if r2 is not None and r2.content.strip().startswith(b"<"):
                 _de_xml(r2.content, fecha_iso, salida)
-            except ET.ParseError:
-                pass
+        except (RuntimeError, ET.ParseError):
+            pass
     vistos, unicos = set(), []
     for d in salida:
+        if d.provincia_codigo == "99":  # índice alfabético, no es una provincia
+            continue
         if d.identificador not in vistos:
             vistos.add(d.identificador)
             unicos.append(d)
