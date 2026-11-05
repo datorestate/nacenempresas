@@ -359,7 +359,7 @@ def _constitucion(c: str) -> dict:
     out["municipio"] = _municipio(dom)
     m = re.search(r"Capital:\s*([\d\.]+,\d{2})\s*Euros", c)
     out["capital"] = _num_es(m.group(1)) if m else None
-    m = re.search(r"\bCNAE[:\s]*(\d{2,4}(?:\.\d{1,2})?)", c)
+    m = re.search(r"\bC\.?\s?N\.?\s?A\.?\s?E\.?[:\s]*(\d{2,4}(?:\.\d{1,2})?)", c)
     out["cnae"] = m.group(1) if m else None
     sector, todos = sectores.clasifica(objeto or "")
     out["sector"], out["sectores"] = sector, todos

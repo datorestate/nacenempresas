@@ -154,3 +154,11 @@ def test_formas_juridicas_interiores():
     assert _forma_juridica("SOCIEDAD AGRARIA DE TRANSFORMACION NUM 1234 LOS OLIVOS") == "SAT"
     assert _forma_juridica("INVERSIONES ALFA SICAV SA") == "SA"
     assert _forma_juridica("GARCIA LOPEZ ANTONIO") is None
+
+
+def test_cnae_con_puntos():
+    import re
+    from nacenempresas import parser
+    for txt, esperado in [("CNAE: 4121", "4121"), ("C.N.A.E. 5611", "5611"), ("C.N.A.E.: 62.01", "62.01")]:
+        m = re.search(r"\bC\.?\s?N\.?\s?A\.?\s?E\.?[:\s]*(\d{2,4}(?:\.\d{1,2})?)", txt)
+        assert m and m.group(1) == esperado
