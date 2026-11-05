@@ -166,7 +166,8 @@ def texto_plano(sel) -> str:
 
 class Cartero:
     def __init__(self, prueba: bool):
-        self.prueba = prueba or not os.environ.get("SMTP_HOST")
+        # Sin servidor o sin contraseña, no se envía nada: los correos quedan en out/correos
+        self.prueba = prueba or not (os.environ.get("SMTP_HOST") and os.environ.get("SMTP_PASS"))
         self.cfg = config.sitio()
         self.remitente = os.environ.get("FROM_EMAIL", self.cfg["email_contacto"])
         self.enviados = 0
@@ -256,7 +257,8 @@ def enviar_avisos(dia: date, subs, cartero: Cartero, st=None) -> dict:
                 adj.append(("nacenempresas_ultimos_7_dias.csv", csv_bytes(sel["nuevas"]), "text/csv"))
             cartero.enviar(sub.email, titulo, html_correo(sub, sel, titulo, intro, cfg, extra), texto_plano(sel), adj)
             stats["bienvenidas"] += 1
-            if st is not None and sub.id.startswith("sub_"):
+            if st is not None and sub.id.startswith("sub_") and not cartero.prueba:
+                # solo se marca la bienvenida cuando el correo sale de verdad
                 configurar_factura(st, sub, cfg)
             continue
         if sub.frecuencia == "semanal":
@@ -348,7 +350,7 @@ def main(argv=None):
     subs = suscriptores.todos(st)
     cartero = Cartero(a.prueba)
     stats = enviar_avisos(dia, subs, cartero, st)
-    listas = entregar_listas(st, cartero) if st else 0
+    listas = entregar_listas(st, cartero) if st and not cartero.prueba else 0
     informe_titular(subs, stats, listas, cartero, dia)
     cartero.cerrar()
     print(f"Suscriptores: {len(subs)} · {stats} · listas: {listas} · correos: {cartero.enviados}"

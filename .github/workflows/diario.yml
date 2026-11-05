@@ -60,6 +60,14 @@ jobs:
           echo "codigo=$?" >> "$GITHUB_OUTPUT"
           exit 0
 
+      - name: Guardar datos
+        run: |
+          git config user.name "nacenempresas-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet || git commit -m "Datos BORME $(date +%F)"
+          git push
+
       - name: Enviar avisos (una vez al día)
         run: |
           HOY=$(date +%F)
@@ -69,15 +77,14 @@ jobs:
           if [ "${{ github.event.inputs.prueba }}" = "true" ]; then
             python -m nacenempresas.avisos --fecha "$HOY" --prueba
           else
-            python -m nacenempresas.avisos --fecha "$HOY" && touch "$MARCA"
+            python -m nacenempresas.avisos --fecha "$HOY"
+            if [ -n "$SMTP_PASS" ]; then touch "$MARCA"; else echo "Sin SMTP_PASS: correos generados pero no enviados"; fi
           fi
 
-      - name: Guardar datos
+      - name: Guardar marca de envío
         run: |
-          git config user.name "nacenempresas-bot"
-          git config user.email "actions@users.noreply.github.com"
           git add data
-          git diff --cached --quiet || git commit -m "Datos BORME $(date +%F)"
+          git diff --cached --quiet || git commit -m "Avisos enviados $(date +%F)"
           git push
 
       - name: Publicación semanal sugerida
