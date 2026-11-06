@@ -1,0 +1,28 @@
+name: Comprobar puesta a la venta
+
+# Revisa clientes manuales, enlaces de pago de Stripe, secretos de correo y datos.
+# No envía correos ni cobra nada. Resultado en el resumen de la ejecución.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "52 11 * * 1"   # lunes: si algo falla, GitHub te avisa por correo
+
+jobs:
+  comprobar:
+    runs-on: ubuntu-latest
+    env:
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      SUSCRIPTORES_MANUAL: ${{ secrets.SUSCRIPTORES_MANUAL }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+      OWNER_EMAIL: ${{ secrets.OWNER_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python scripts/comprobar.py

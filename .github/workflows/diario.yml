@@ -2,9 +2,19 @@ name: Diario BORME
 
 on:
   schedule:
-    # Lunes a viernes. El BOE publica el BORME hacia las 7:30 (Madrid), 6:30 en Canarias.
-    - cron: "20 7 * * 1-5"    # 7:20 en Canarias y 8:20 en la Península en invierno (una hora más en verano)
-    - cron: "30 10 * * 1-5"   # reintento por si la primera no encontró el BORME
+    # Lunes a viernes, horas UTC. El BOE publica el BORME hacia las 7:30 de Madrid.
+    # GitHub retrasa a veces los cron varias horas: se programan varios intentos en minutos
+    # poco usados. Es idempotente: un día ya guardado no se reprocesa y los avisos se envían
+    # una sola vez al día (marca data/publico/enviado-AAAA-MM-DD).
+    - cron: "41 6 * * 1-5"
+    - cron: "3 7 * * 1-5"
+    - cron: "23 7 * * 1-5"
+    - cron: "47 7 * * 1-5"
+    - cron: "13 8 * * 1-5"
+    - cron: "41 8 * * 1-5"
+    - cron: "17 9 * * 1-5"
+    - cron: "30 10 * * 1-5"
+    - cron: "12 13 * * 1-5"
   workflow_dispatch:
     inputs:
       dias:
