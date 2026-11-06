@@ -23,6 +23,7 @@
         <span class="obj">{{ e.objeto[:110] }}{% if e.objeto|length > 110 %}…{% endif %}</span></li>
     {% endfor %}
     </ol>
+    {% if muestra and muestra[0].oculta %}<p class="peq tenue">Nombres en parte ocultos: completos en los avisos.</p>{% endif %}
   </aside>
 </section>
 

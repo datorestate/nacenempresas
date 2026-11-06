@@ -32,4 +32,4 @@ P. D.: Adjunto una muestra con 5 de las sociedades creadas la semana pasada en [
 
 ---
 
-**Muestra:** imprime 5 filas de la página de su provincia (`/provincias/[provincia].html`); con el domicilio completo, del envío de ese día.
+**Muestra:** imprime 5 filas de tu propio aviso completo del día (te llega cada mañana como cliente Pro de Canarias). La web pública muestra los nombres de los últimos 7 días en parte ocultos.

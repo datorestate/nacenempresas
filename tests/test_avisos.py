@@ -103,3 +103,16 @@ def test_prueba_recortada(entorno):
     assert html_.count("<tr>") == 2
     assert f"2 de {total}" in html_
     assert "PTDA LA MARINA 22" not in html_ and "boe.es/x.pdf" not in html_
+    nombres = [r["denominacion"] for r in regs if r["es_constitucion"]]
+    assert not any(n in html_ for n in nombres)  # nombre completo oculto
+    assert "€" not in html_.split("Gestiona tu suscripción")[0]  # sin capital
+    texto = next(p for p in partes if p.get_content_type() == "text/plain").get_payload(decode=True).decode()
+    assert not any(n in texto for n in nombres)
+
+
+def test_nombre_parcial():
+    from nacenempresas.ocultar import nombre_parcial
+    assert nombre_parcial("CONSTRUCCIONES GARCIA PEREZ SL") == "CONSTRUCCIONES G••• P••• SL"
+    assert nombre_parcial("ACMETECH SOCIEDAD LIMITADA") == "ACM••• SOCIEDAD LIMITADA"
+    assert nombre_parcial("BAR DE LA PLAZA S.L.") == "BAR DE LA P••• S.L."
+    assert nombre_parcial("XY SL") == "X••• SL"

@@ -14,7 +14,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import almacen, config, fiscal, sectores
+from . import almacen, config, fiscal, ocultar, sectores
 from .provincias import PROVINCIAS, slug_provincia
 
 RAIZ = config.RAIZ
@@ -29,7 +29,7 @@ FAQ = [
     ("¿Puedo enviarles un email comercial a estas empresas?", "No sin su consentimiento previo: el artículo 21 de la LSSI lo prohíbe. Lo habitual y eficaz es el correo postal al domicilio social, la visita o la llamada. Te damos el domicilio completo para eso."),
     ("¿Traéis teléfono o email de las empresas?", "No. El BORME no los publica y no los compramos a terceros. Es la diferencia entre un dato oficial y fresco y una base de datos de contacto."),
     ("¿Cuándo llega el aviso?", "Cada día laborable por la mañana, poco después de que el BOE publique el BORME. Si eliges el resumen semanal, lo recibes los lunes."),
-    ("¿Cómo funciona la prueba?", "Te das de alta con tu tarjeta y durante 7 días recibes cada mañana una muestra: hasta 5 sociedades al día de tu zona, con su actividad, sector y capital, pero sin domicilio. No se cobra nada hasta el día 8; ese día empieza la suscripción y pasas a recibirlas todas, con domicilio. Si cancelas antes desde el portal del cliente, no pagas nada."),
+    ("¿Cómo funciona la prueba?", "Te das de alta con tu tarjeta y durante 7 días recibes cada mañana una muestra: hasta 5 sociedades al día de tu zona, con su municipio, actividad y sector, pero con el nombre en parte oculto y sin domicilio ni capital. No se cobra nada hasta el día 8; ese día empieza la suscripción y pasas a recibirlas todas, completas. Si cancelas antes desde el portal del cliente, no pagas nada."),
     ("¿Cómo es la factura?", "Al darte de alta indicas tu NIF o CIF y tu razón social, y cada cobro genera su factura, descargable desde el portal del cliente. Facturamos desde Canarias: a empresas de la Península y Baleares la factura va sin IVA ni IGIC, y el IVA lo autoliquidas tú por inversión del sujeto pasivo, con lo que tu coste neto es el precio publicado. A empresas canarias, sin IGIC mientras estemos en el régimen del pequeño empresario."),
     ("¿Puedo contratar como particular?", "No. El servicio es solo para empresas y profesionales, y por eso pedimos el NIF o CIF al darte de alta."),
 ]
@@ -156,6 +156,13 @@ def construir(hoy: date | None = None):
     if dias and date.fromisoformat(dias[-1]) < hoy - timedelta(days=DIAS_PUBLICOS):
         hoy = date.fromisoformat(dias[-1])  # datos antiguos (pruebas): se centra en el último día
     fichas, ultimo = _cargar_ventana(hoy, DIAS_PUBLICOS)
+    # Lo reciente es lo que se vende: en la web, los nombres de los últimos N días van parciales.
+    dias_ocultos = cfg["precios"].get("dias_nombre_oculto_web", 7)
+    limite = hoy - timedelta(days=dias_ocultos)
+    for f in fichas:
+        if date.fromisoformat(f["fecha"]) > limite:
+            f["denominacion"] = ocultar.nombre_parcial(f["denominacion"])
+            f["oculta"] = True
     ultimo = ultimo or {"fecha": hoy.isoformat(), "total_constituciones": 0}
     env = Environment(loader=FileSystemLoader(RAIZ / "templates"), autoescape=select_autoescape(["html"]))
     if SALIDA.exists():

@@ -23,7 +23,11 @@ def test_pipeline_y_web(tmp_path, monkeypatch):
     n = sitio_web.construir(date(2015, 2, 10))
     assert n > 60
     caceres = (tmp_path / "_site" / "provincias" / "caceres.html").read_text("utf-8")
-    assert "SERCAR 33 CACERES SL" in caceres and "MOLINO HARINERO" not in caceres
+    # los nombres de los últimos 7 días salen en parte ocultos; los anteriores, completos
+    assert "SERCAR 33 CACERES SL" not in caceres and "SERCAR 33 C••• SL" in caceres and "MOLINO HARINERO" not in caceres
+    monkeypatch.setattr(sitio_web, "SALIDA", tmp_path / "_site2")
+    sitio_web.construir(date(2015, 2, 20))
+    assert "SERCAR 33 CACERES SL" in (tmp_path / "_site2" / "provincias" / "caceres.html").read_text("utf-8")
     assert (tmp_path / "_site" / "sitemap.xml").exists()
     for pagina in ["index.html", "calculadoras/autonomo-o-sl.html", "privacidad.html", "informe.html"]:
         assert (tmp_path / "_site" / pagina).stat().st_size > 2000

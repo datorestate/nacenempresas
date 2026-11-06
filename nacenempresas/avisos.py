@@ -1,7 +1,7 @@
 """Envío de avisos a clientes: email HTML + CSV, bienvenida con muestra, fin de prueba
 y entrega automática de listas puntuales compradas.
 
-Durante la prueba (suscripción en estado trialing) los avisos van recortados: como mucho
+Durante la prueba (suscripción en estado trialing) los avisos van recortados (nombre parcial, sin capital): como mucho
 precios.empresas_prueba_dia sociedades, sin domicilio, sin enlace al PDF del BORME, sin CSV
 ni señales. El título sigue mostrando el total real, que es lo que vende.
 
@@ -24,7 +24,7 @@ from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 from pathlib import Path
 
-from . import almacen, config, fiscal, sectores, suscriptores
+from . import almacen, config, fiscal, ocultar, sectores, suscriptores
 from .provincias import nombre as nombre_prov, normaliza
 
 SALIDA = config.RAIZ / "out" / "correos"
@@ -81,9 +81,10 @@ def recortar_prueba(sel: dict, cfg) -> dict:
 def aviso_recorte(sel, cfg) -> str:
     total = sel.get("total", len(sel["nuevas"]))
     return ("<p style='background:#e8f3ee;padding:12px;border-radius:8px'>Estás en el periodo de prueba: "
-            f"te enseñamos <strong>{len(sel['nuevas'])} de {total}</strong> sociedades, sin domicilio. "
-            "Cuando empiece tu suscripción recibirás todas las que encajen con tu filtro, con domicilio social, "
-            "capital y enlace al BORME"
+            f"te enseñamos <strong>{len(sel['nuevas'])} de {total}</strong> sociedades, con el nombre parcial "
+            "y sin domicilio ni capital. "
+            "Cuando empiece tu suscripción recibirás todas las que encajen con tu filtro, con nombre completo, "
+            "domicilio social, capital y enlace al BORME"
             ". En el plan Pro, también el CSV y las señales.</p>")
 
 
@@ -130,20 +131,23 @@ ETIQUETA_SENAL = {
 
 
 def html_correo(sub, sel, titulo, intro, cfg, extra_html="", recortado=False) -> str:
-    """recortado=True (prueba): sin domicilio ni enlace al PDF del BORME, que lo contiene."""
+    """recortado=True (prueba): nombre parcial, sin domicilio, sin capital y sin enlace al PDF del BORME."""
     e = html.escape
     filas = []
     for r in sel["nuevas"][:300]:
         c = _const(r)
         lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
         borme = "" if recortado else f"<br><a href='{e(r['url_pdf'])}' style='color:#0f6b4f'>BORME</a>"
+        nombre = ocultar.nombre_parcial(r["denominacion"]) if recortado else r["denominacion"]
+        objeto = ocultar.recortar_texto(c.get("objeto_social"), 110) if recortado else (c.get("objeto_social") or "")[:260]
+        capital = "Capital: con la suscripción" if recortado else _eur(c.get("capital"))
         filas.append(
             f"<tr><td style='padding:10px 8px;border-bottom:1px solid #D9DEE3'>"
-            f"<strong style='color:#14213D'>{e(r['denominacion'])}</strong><br>"
+            f"<strong style='color:#14213D'>{e(nombre)}</strong><br>"
             f"<span style='color:#4A5672;font-size:13px'>{e(lugar)}</span><br>"
-            f"<span style='font-size:13px'>{e((c.get('objeto_social') or '')[:260])}</span></td>"
+            f"<span style='font-size:13px'>{e(objeto)}</span></td>"
             f"<td style='padding:10px 8px;border-bottom:1px solid #D9DEE3;font-size:13px;white-space:nowrap'>"
-            f"{e(sectores.nombre_sector(c.get('sector') or 'otros'))}<br>{_eur(c.get('capital'))}"
+            f"{e(sectores.nombre_sector(c.get('sector') or 'otros'))}<br>{e(capital)}"
             f"{borme}</td></tr>")
     tabla = ("<table style='width:100%;border-collapse:collapse'>" + "".join(filas) + "</table>") \
         if filas else "<p>Hoy no hay sociedades nuevas que encajen con tu filtro.</p>"
@@ -179,10 +183,15 @@ def texto_plano(sel, recortado=False) -> str:
     for r in sel["nuevas"]:
         c = _const(r)
         lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
-        lineas.append(f"- {r['denominacion']} | {lugar} | {(c.get('objeto_social') or '')[:160]}")
+        if recortado:
+            lineas.append(f"- {ocultar.nombre_parcial(r['denominacion'])} | {lugar} | "
+                          f"{ocultar.recortar_texto(c.get('objeto_social'), 110)}")
+        else:
+            lineas.append(f"- {r['denominacion']} | {lugar} | {(c.get('objeto_social') or '')[:160]}")
     if recortado:
         lineas.append(f"\nPeriodo de prueba: {len(sel['nuevas'])} de {sel.get('total', len(sel['nuevas']))} "
-                      "sociedades, sin domicilio. Con la suscripción activa las recibirás todas.")
+                      "sociedades, con el nombre parcial y sin domicilio ni capital. "
+                      "Con la suscripción activa las recibirás todas, completas.")
     for r, ev in sel["senales"]:
         lineas.append(f"* {ETIQUETA_SENAL.get(ev['tipo'], ev['tipo'])}: {r['denominacion']}")
     return "\n".join(lineas) + "\n\n" + AVISO_LEGAL_CLIENTE

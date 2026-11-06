@@ -42,11 +42,11 @@ Envíale en ese momento, al email que te ha autorizado, el enlace del plan Bási
 
 ## Visita en persona (en tu isla)
 
-Tu ventaja frente a cualquier competidor de Madrid es que puedes presentarte en el despacho. Lleva impresa la página de Canarias del día (`/provincias/canarias.html`) y una carta de bienvenida de muestra (`ventas/carta_para_clientes.md`).
+Tu ventaja frente a cualquier competidor de Madrid es que puedes presentarte en el despacho. Lleva impreso tu propio aviso completo del día (te llega cada mañana como cliente Pro de Canarias; la web pública oculta en parte los nombres de los últimos 7 días) y una carta de bienvenida de muestra (`ventas/carta_para_clientes.md`).
 
 > Buenos días, soy [nombre], de NacenEmpresas, un servicio canario. Esta es la lista de las sociedades que se crearon esta semana en [isla]: [N]. ¿Quién de aquí se encarga de captar clientes? Si le interesa, lo activamos ahora: 7 días de prueba y el primer cobro el día 8.
 
-Que se dé de alta allí mismo desde su móvil o el ordenador del despacho (tiene que meter su tarjeta él, no tú). Deja la hoja impresa: en la prueba solo verá 5 empresas al día, y la lista completa que le enseñas es lo que le hace quedarse. Una visita convierte bastante más que una llamada, así que reserva para visitas las mañanas de las dos primeras semanas.
+Que se dé de alta allí mismo desde su móvil o el ordenador del despacho (tiene que meter su tarjeta él, no tú). Deja la hoja impresa: en la prueba solo verá 5 empresas al día, con el nombre en parte oculto, y la lista completa que le enseñas es lo que le hace quedarse. Una visita convierte bastante más que una llamada, así que reserva para visitas las mañanas de las dos primeras semanas.
 
 ## Rutina recomendada
 

@@ -25,6 +25,7 @@
   </tbody>
 </table>
 </div>
+{% if filas|selectattr("oculta")|list %}<p class="tenue peq">Los nombres de los últimos {{ cfg.precios.dias_nombre_oculto_web }} días se muestran en parte. Completos, con domicilio social y capital, en los <a href="{{ raiz }}index.html#tarifas">avisos de cada mañana</a>.</p>{% endif %}
 {% if bloqueadas %}<p class="tenue peq">Mostramos las {{ filas|length }} más recientes. Las {{ total_30 - filas|length }} restantes de los últimos 30 días están en la <a href="{{ raiz }}index.html#tarifas">lista puntual</a> o en los avisos.</p>{% endif %}
 {% else %}
 <p>Aún no hay constituciones registradas en este periodo. Las próximas aparecerán aquí cuando se publiquen en el BORME.</p>
