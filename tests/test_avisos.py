@@ -112,7 +112,8 @@ def test_prueba_recortada(entorno):
 
 def test_nombre_parcial():
     from nacenempresas.ocultar import nombre_parcial
-    assert nombre_parcial("CONSTRUCCIONES GARCIA PEREZ SL") == "CONSTRUCCIONES G••• P••• SL"
+    assert nombre_parcial("CONSTRUCCIONES GARCIA PEREZ SL") == "CON••• G••• P••• SL"
     assert nombre_parcial("ACMETECH SOCIEDAD LIMITADA") == "ACM••• SOCIEDAD LIMITADA"
-    assert nombre_parcial("BAR DE LA PLAZA S.L.") == "BAR DE LA P••• S.L."
+    assert nombre_parcial("BAR DE LA PLAZA S.L.") == "B••• DE LA P••• S.L."
     assert nombre_parcial("XY SL") == "X••• SL"
+    assert nombre_parcial("TERRITORIO 7 SL") == "TER••• ••• SL"

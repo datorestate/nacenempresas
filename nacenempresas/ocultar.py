@@ -1,10 +1,10 @@
 """Ocultación parcial de datos para la prueba gratuita y la web pública.
 
-nombre_parcial("CONSTRUCCIONES GARCIA PEREZ SL") -> "CONSTRUCCIONES G••• P••• SL"
-nombre_parcial("ACMETECH SL")                    -> "ACM••• SL"
+nombre_parcial("CONSTRUCCIONES GARCIA PEREZ SL") -> "CON••• G••• P••• SL"
+nombre_parcial("TERRITORIO 7 SL")                -> "TER••• ••• SL"
 
-Se deja ver el tipo de negocio (primera palabra) y la forma jurídica, pero no el nombre
-completo: sirve de muestra sin poder usarse para contactar con la sociedad.
+Solo se ven las iniciales y la forma jurídica: sirve de muestra (la actividad y el municipio
+van aparte) sin poder usarse para localizar ni contactar con la sociedad.
 """
 import re
 
@@ -12,7 +12,15 @@ PUNTOS = "•••"
 _SUFIJO = re.compile(
     r"^(S\.?L\.?(U|L|P|NE)?\.?|S\.?A\.?U?\.?|S\.?COOP\.?|SCOOP|SAT|SOCIEDAD|LIMITADA|AN[OÓ]NIMA|"
     r"UNIPERSONAL|PROFESIONAL|LABORAL|COOPERATIVA|NUEVA|EMPRESA|EN|LIQUIDACION|LIQUIDACIÓN)$", re.I)
-_CORTA = re.compile(r"^(DE|DEL|LA|LAS|EL|LOS|Y|E|&|-|\d{1,2})$", re.I)
+_CONECTOR = re.compile(r"^(DE|DEL|LA|LAS|EL|LOS|Y|E|&|-)$", re.I)
+
+
+def _palabra(p: str, letras: int) -> str:
+    if _CONECTOR.match(p):
+        return p
+    if not p[:1].isalpha():
+        return PUNTOS
+    return (p[:letras] if len(p) > letras else p[:1]) + PUNTOS
 
 
 def nombre_parcial(nombre: str) -> str:
@@ -23,11 +31,7 @@ def nombre_parcial(nombre: str) -> str:
     while fin > 1 and _SUFIJO.match(palabras[fin - 1]):
         fin -= 1
     cuerpo, sufijo = palabras[:fin], palabras[fin:]
-    if len(cuerpo) == 1:
-        p = cuerpo[0]
-        visibles = [p[:3] + PUNTOS if len(p) > 3 else p[:1] + PUNTOS]
-    else:
-        visibles = [cuerpo[0]] + [p if _CORTA.match(p) else p[:1] + PUNTOS for p in cuerpo[1:]]
+    visibles = [_palabra(cuerpo[0], 3)] + [_palabra(p, 1) for p in cuerpo[1:]]
     return " ".join(visibles + sufijo)
 
 
