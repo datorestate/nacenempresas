@@ -161,6 +161,7 @@ def construir(hoy: date | None = None):
     limite = hoy - timedelta(days=dias_ocultos)
     for f in fichas:
         if date.fromisoformat(f["fecha"]) > limite:
+            f["orden"] = f["denominacion"]
             f["denominacion"] = ocultar.nombre_parcial(f["denominacion"])
             f["oculta"] = True
     ultimo = ultimo or {"fecha": hoy.isoformat(), "total_constituciones": 0}
@@ -220,7 +221,7 @@ def construir(hoy: date | None = None):
                     sector=s["clave"], sector_nombre=s["nombre"], **{**base, "total_30": len(fss)})
         lista_prov.append((sl, nombre, len(fs)))
     # ---------- Canarias: las dos provincias juntas (mercado local del titular)
-    fs_can = sorted(por_prov.get("35", []) + por_prov.get("38", []), key=lambda f: (f["fecha"], f["denominacion"]), reverse=True)
+    fs_can = sorted(por_prov.get("35", []) + por_prov.get("38", []), key=lambda f: (f["fecha"], f.get("orden", f["denominacion"])), reverse=True)
     escribe("provincias/canarias.html", "provincia.html", "0.9",
             titulo="Empresas creadas en Canarias hoy y en los últimos 30 días | NacenEmpresas",
             descripcion=f"Sociedades de nueva creación en Canarias (Las Palmas y Santa Cruz de Tenerife) según el BORME: {len(fs_can)} en los últimos 30 días. Recíbelas cada mañana.",

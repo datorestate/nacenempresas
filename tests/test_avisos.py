@@ -117,3 +117,4 @@ def test_nombre_parcial():
     assert nombre_parcial("BAR DE LA PLAZA S.L.") == "B••• DE LA P••• S.L."
     assert nombre_parcial("XY SL") == "X••• SL"
     assert nombre_parcial("TERRITORIO 7 SL") == "TER••• ••• SL"
+    assert nombre_parcial("1906 VALLE TINTO AIE") == "1••• V••• T••• AIE"

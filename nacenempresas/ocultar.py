@@ -10,7 +10,7 @@ import re
 
 PUNTOS = "•••"
 _SUFIJO = re.compile(
-    r"^(S\.?L\.?(U|L|P|NE)?\.?|S\.?A\.?U?\.?|S\.?COOP\.?|SCOOP|SAT|SOCIEDAD|LIMITADA|AN[OÓ]NIMA|"
+    r"^(S\.?L\.?(U|L|P|NE)?\.?|A\.?I\.?E\.?|U\.?T\.?E\.?|S\.?C\.?P\.?|C\.?B\.?|S\.?A\.?U?\.?|S\.?COOP\.?|SCOOP|SAT|SOCIEDAD|LIMITADA|AN[OÓ]NIMA|"
     r"UNIPERSONAL|PROFESIONAL|LABORAL|COOPERATIVA|NUEVA|EMPRESA|EN|LIQUIDACION|LIQUIDACIÓN)$", re.I)
 _CONECTOR = re.compile(r"^(DE|DEL|LA|LAS|EL|LOS|Y|E|&|-)$", re.I)
 
@@ -18,8 +18,9 @@ _CONECTOR = re.compile(r"^(DE|DEL|LA|LAS|EL|LOS|Y|E|&|-)$", re.I)
 def _palabra(p: str, letras: int) -> str:
     if _CONECTOR.match(p):
         return p
+    p = p.lstrip("\"'«»“”‘’(.,-")
     if not p[:1].isalpha():
-        return PUNTOS
+        return (p[:1] + PUNTOS) if letras > 1 and p[:1].isdigit() else PUNTOS
     return (p[:letras] if len(p) > letras else p[:1]) + PUNTOS
 
 
