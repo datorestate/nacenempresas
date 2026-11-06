@@ -25,7 +25,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from nacenempresas import fiscal  # noqa: E402
+from nacenempresas import canarias, fiscal  # noqa: E402
 from nacenempresas.config import sitio  # noqa: E402
 from nacenempresas.provincias import PROVINCIAS  # noqa: E402
 from nacenempresas.stripe_api import Stripe, StripeError  # noqa: E402
@@ -65,7 +65,9 @@ def tipo_igic(st, igic):
 
 
 def campo_provincia_desplegable():
-    opciones = [{"label": "Canarias (Las Palmas y Santa Cruz de Tenerife)", "value": "pCN"}] + \
+    opciones = [{"label": "Canarias (las dos provincias)", "value": "pCN"}] + \
+        [{"label": f"Solo la isla de {canarias.nombre_isla(i)}", "value": cod}
+         for i, cod in canarias.CODIGOS_STRIPE.items()] + \
         [{"label": n[:100], "value": f"p{c}"} for c, n in sorted(PROVINCIAS.items(), key=lambda kv: kv[1])]
     return {"key": "provincia", "type": "dropdown",
             "label": {"type": "custom", "custom": "Provincia"},
@@ -79,7 +81,7 @@ CAMPO_FRECUENCIA = {"key": "frecuencia", "type": "dropdown",
                     "dropdown": {"options": [{"label": "Cada mañana laborable", "value": "diaria"},
                                              {"label": "Resumen los lunes", "value": "semanal"}]}}
 CAMPO_PROVINCIAS_PRO = {"key": "provincias", "type": "text",
-                        "label": {"type": "custom", "custom": "Provincias (hasta 5, separadas por comas)"}}
+                        "label": {"type": "custom", "custom": "Provincias o islas (hasta 5, separadas por comas)"}}
 
 
 def datos_prueba(cfg, clave):
@@ -91,8 +93,17 @@ def datos_prueba(cfg, clave):
             "payment_method_collection": "always"}
 
 
+def _opciones(campos):
+    return [(c.get("key"), (c.get("label") or {}).get("custom"),
+             [o["value"] for o in (c.get("dropdown") or {}).get("options", [])]) for c in campos or []]
+
+
 def _necesita_actualizar(pl, deseado):
     sd = pl.get("subscription_data") or {}
+    if "custom_fields" in deseado and _opciones(pl.get("custom_fields")) != _opciones(deseado["custom_fields"]):
+        return True
+    if "subscription_data" not in deseado:
+        return False
     return (pl.get("payment_method_collection") != deseado["payment_method_collection"] or
             sd.get("trial_period_days") != deseado["subscription_data"]["trial_period_days"])
 
@@ -100,10 +111,11 @@ def _necesita_actualizar(pl, deseado):
 def enlace(st, precio, campos, cfg, suscripcion=True, clave=""):
     for pl in st.listar("payment_links", active="true"):
         if (pl.get("metadata") or {}).get("rc_link") == clave:
-            if suscripcion and _necesita_actualizar(pl, datos_prueba(cfg, clave)):
+            deseado = {**(datos_prueba(cfg, clave) if suscripcion else {}), "custom_fields": campos}
+            if _necesita_actualizar(pl, deseado):
                 # Se actualiza el enlace existente: la URL (web, QR, cartas) no cambia
                 try:
-                    return st.post(f"payment_links/{pl['id']}", datos_prueba(cfg, clave))
+                    return st.post(f"payment_links/{pl['id']}", deseado)
                 except StripeError as e:
                     print(f"No se pudo actualizar {clave} ({e}); se desactiva y se crea uno nuevo")
                     st.post(f"payment_links/{pl['id']}", {"active": False})

@@ -13,7 +13,7 @@ from datetime import date
 
 import pdfplumber
 
-from . import sectores
+from . import canarias, sectores
 from .provincias import nombre as nombre_provincia
 
 # ---------------------------------------------------------------- texto del PDF
@@ -242,13 +242,14 @@ def _detalle_seguro(contenido: str):
     return t
 
 
-_ARTICULO = re.compile(r"^(.*?)\s*\((LAS|LOS|LA|EL|L'|O|A|AS|OS|ELS|ES|SES|SA|LES)\)$", re.I)
+_ARTICULO = re.compile(r"^(.*?)\s*\((LAS|LOS|LA|EL|L'|O|A|AS|OS|ELS|ES|SES|SA|LES)\)?$", re.I)
 
 
 def _municipio(domicilio: str):
     """'C/ X 1 (PALMAS DE GRAN CANARIA (LAS)' -> 'Las Palmas De Gran Canaria'."""
     d = (domicilio or "").strip().rstrip(".")
-    m = re.search(r"\(([^()]*(?:\([^()]*\))?[^()]*)\)?$", d)
+    # el BORME corta los nombres largos: "(PALMAS DE GRAN CANARIA (LAS" sin cerrar
+    m = re.search(r"\(([^()]*(?:\([^()]*\)?)?[^()]*)\)?$", d)
     if not m or not m.group(1).strip():
         return None
     muni = m.group(1).strip()
@@ -315,9 +316,10 @@ def analizar_entrada(numero: int, lineas: list[str], contexto: dict) -> dict | N
             ev["cargos"] = _cargos(contenido)
         elif acto == "Constitución":
             ev.update(_constitucion(contenido))
+            ev["municipio"] = canarias.municipio(ev.get("municipio"), contexto["provincia_codigo"])
         elif tipo == "traslado":
             ev["domicilio"] = contenido
-            ev["municipio"] = _municipio(contenido)
+            ev["municipio"] = canarias.municipio(_municipio(contenido), contexto["provincia_codigo"])
         elif tipo in ("ampliacion_capital", "reduccion_capital"):
             imp = re.search(r"(?:Capital|Importe reducción):\s*([\d\.]+,\d{2})", contenido)
             res = re.search(r"Resultante Suscrito:\s*([\d\.]+,\d{2})", contenido)
@@ -361,7 +363,7 @@ def _constitucion(c: str) -> dict:
     out["capital"] = _num_es(m.group(1)) if m else None
     m = re.search(r"\bC\.?\s?N\.?\s?A\.?\s?E\.?[:\s]*(\d{2,4}(?:\.\d{1,2})?)", c)
     out["cnae"] = m.group(1) if m else None
-    sector, todos = sectores.clasifica(objeto or "")
+    sector, todos = sectores.clasifica(objeto or "", out["cnae"])
     out["sector"], out["sectores"] = sector, todos
     return out
 

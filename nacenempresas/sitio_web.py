@@ -14,7 +14,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import almacen, config, fiscal, ocultar, sectores
+from . import almacen, canarias, config, fiscal, ocultar, sectores
 from .provincias import PROVINCIAS, slug_provincia
 
 RAIZ = config.RAIZ
@@ -133,6 +133,14 @@ def _cargar_ventana(dias_hasta: date, n: int):
             ultimo = p
     for f in fichas:
         f["provincia_nombre"] = PROVINCIAS.get(f["provincia"], f["provincia"])
+        if f["provincia"] in ("35", "38"):
+            # nombres que el BORME corta o escribe sin tildes, e isla para las páginas por isla
+            f["isla"] = canarias.isla(f.get("municipio"), f["provincia"])
+            f["municipio"] = canarias.municipio(f.get("municipio"), f["provincia"])
+            if f["isla"]:
+                f["provincia_nombre"] = canarias.nombre_isla(f["isla"])
+        if (f.get("sector") or "otros") == "otros" and f.get("objeto"):
+            f["sector"] = sectores.clasifica(f["objeto"])[0]
         f["fecha_corta"] = _fecha_corta(f["fecha"])
         f["objeto"] = f.get("objeto") or ""
     excl_p = RAIZ / "config" / "excluidas.json"
@@ -228,11 +236,27 @@ def construir(hoy: date | None = None):
             h1="Empresas creadas en Canarias", filas=fs_can[:25], bloqueadas=_ficticias(min(8, max(0, len(fs_can) - 25))),
             sectores=None, sector=None, provincia="Canarias", slug="canarias", total_30=len(fs_can),
             ultimo_dia=_fecha_larga(fs_can[0]["fecha"]) if fs_can else None, mostrar_provincia=True,
-            subtitulo_cta=f"Las dos provincias canarias en un solo plan Básico, por {cfg['precios']['basico_mes']} € al mes, con domicilio, actividad y capital.",
-            enlaces_extra=[("las-palmas.html", f"Las Palmas ({len(por_prov.get('35', []))})"),
-                           ("santa-cruz-de-tenerife.html", f"Santa Cruz de Tenerife ({len(por_prov.get('38', []))})")])
+            subtitulo_cta=f"Toda Canarias o solo tu isla en el plan Básico, por {cfg['precios']['basico_mes']} € al mes, con domicilio, actividad y capital.",
+            enlaces_extra=[(f"isla-{i}.html", f"{canarias.nombre_isla(i)} ({sum(1 for f in fs_can if f.get('isla') == i)})")
+                           for i in canarias.ISLAS] +
+                          [("las-palmas.html", f"Provincia de Las Palmas ({len(por_prov.get('35', []))})"),
+                           ("santa-cruz-de-tenerife.html", f"Provincia de Santa Cruz de Tenerife ({len(por_prov.get('38', []))})")])
+    # ---------- una página por isla (las gestorías de Lanzarote o La Palma solo quieren su isla)
+    for i, (nom_isla, _) in canarias.ISLAS.items():
+        fi = [f for f in fs_can if f.get("isla") == i]
+        escribe(f"provincias/isla-{i}.html", "provincia.html", "0.8",
+                titulo=f"Empresas creadas en {nom_isla} hoy y en los últimos 30 días | NacenEmpresas",
+                descripcion=f"Sociedades de nueva creación en {nom_isla} según el BORME: {len(fi)} en los últimos 30 días, con municipio y actividad. Recíbelas cada mañana.",
+                h1=f"Empresas creadas en {nom_isla}", filas=fi[:25], bloqueadas=_ficticias(min(8, max(0, len(fi) - 25))),
+                sectores=None, sector=None, provincia=nom_isla, slug=f"isla-{i}", total_30=len(fi),
+                ultimo_dia=_fecha_larga(fi[0]["fecha"]) if fi else None,
+                subtitulo_cta=f"Solo las de {nom_isla} en el plan Básico, por {cfg['precios']['basico_mes']} € al mes, con domicilio, actividad y capital.",
+                enlaces_extra=[("canarias.html", f"Toda Canarias ({len(fs_can)})")] +
+                              [(f"isla-{j}.html", canarias.nombre_isla(j)) for j in canarias.ISLAS if j != i])
     cuerpo = "<h1>Empresas creadas por provincia</h1><p class='tenue'>Sociedades constituidas en los últimos 30 días según el BORME.</p>" + \
-        f"<p><a class='boton secundario' href='canarias.html'>Canarias: las dos provincias ({len(fs_can)})</a></p><ul class='fichas'>" + \
+        f"<p><a class='boton secundario' href='canarias.html'>Canarias: las dos provincias ({len(fs_can)})</a> " + \
+        " ".join(f"<a href='isla-{i}.html'>{html.escape(canarias.nombre_isla(i))}</a>" for i in canarias.ISLAS) + \
+        "</p><ul class='fichas'>" + \
         "".join(f"<li><a href='{sl}.html'>{html.escape(n)} ({c})</a></li>" for sl, n, c in lista_prov) + "</ul>"
     escribe("provincias/index.html", "simple.html", "0.9", titulo="Empresas recién creadas por provincia | NacenEmpresas",
             descripcion="Consulta las sociedades de nueva creación en cada provincia española, actualizadas cada día laborable desde el BORME.",

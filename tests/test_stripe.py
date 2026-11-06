@@ -67,7 +67,7 @@ def test_setup_stripe(monkeypatch, tmp_path):
     assert sub["payment_method_collection"] == "always"  # prueba con tarjeta
     assert sub["subscription_data"]["trial_period_days"] == 7
     opciones = sub["custom_fields"][0]["dropdown"]["options"]
-    assert len(opciones) == 53 and opciones[0]["value"] == "pCN"
+    assert len(opciones) == 60 and opciones[0]["value"] == "pCN" and opciones[1]["value"] == "iGC"
     assert len(sub["custom_fields"]) <= 3
     assert sub["tax_id_collection"] == {"enabled": True, "required": "if_supported"}
     assert "inversión del sujeto pasivo" in sub["custom_text"]["submit"]["message"]

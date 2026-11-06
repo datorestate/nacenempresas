@@ -143,7 +143,7 @@ def test_formato_las_palmas_registro_y_municipio():
     bull = regs[0]
     assert bull["denominacion"] == "BULL FILMS 2026, SOCIEDAD LIMITADA" and bull["forma_juridica"] == "SL"
     c = bull["eventos"][0]
-    assert c["municipio"] == "Las Palmas De Gran Canaria" and c["capital"] == 100.0
+    assert c["municipio"] == "Las Palmas de Gran Canaria" and c["capital"] == 100.0
     assert regs[1]["forma_juridica"] == "SL" and regs[2]["forma_juridica"] == "SA"
     assert "PEREZ" not in json.dumps(regs, ensure_ascii=False) and "ORLANDO" not in json.dumps(regs, ensure_ascii=False)
 

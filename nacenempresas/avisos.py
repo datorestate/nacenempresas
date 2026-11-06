@@ -24,7 +24,7 @@ from email.message import EmailMessage
 from email.utils import formataddr, make_msgid
 from pathlib import Path
 
-from . import almacen, config, fiscal, ocultar, sectores, suscriptores
+from . import almacen, canarias, config, fiscal, ocultar, sectores, suscriptores
 from .provincias import nombre as nombre_prov, normaliza
 
 SALIDA = config.RAIZ / "out" / "correos"
@@ -42,8 +42,27 @@ def _const(r):
     return next(e for e in r["eventos"] if e["tipo"] == "constitucion")
 
 
+def _muni(r):
+    c = _const(r) if r.get("es_constitucion") else {}
+    return canarias.municipio(c.get("municipio"), r["provincia_codigo"])
+
+
+def en_islas(r: dict, sub, municipio=None) -> bool:
+    """Si el cliente pidió islas, la sociedad tiene que estar en una de ellas
+    (solo en las provincias que cubren esas islas)."""
+    islas = getattr(sub, "islas", None) or []
+    provs_islas = {canarias.ISLAS[i][1] for i in islas}
+    if not islas or r["provincia_codigo"] not in provs_islas:
+        return True
+    if municipio is None:
+        municipio = (_const(r) if r.get("es_constitucion") else {}).get("municipio")
+    return canarias.isla(municipio, r["provincia_codigo"]) in islas
+
+
 def coincide(r: dict, sub) -> bool:
     if r["provincia_codigo"] not in sub.provincias:
+        return False
+    if not en_islas(r, sub):
         return False
     if not sub.sectores and not sub.palabras:
         return True
@@ -63,6 +82,8 @@ def seleccion(registros: list[dict], sub) -> dict:
             if r.get("es_constitucion") or r["provincia_codigo"] not in sub.provincias:
                 continue
             for e in r["eventos"]:
+                if getattr(sub, "islas", None) and not en_islas(r, sub, e.get("municipio") or ""):
+                    continue
                 if e["tipo"] in ("traslado", "ampliacion_capital", "pagina_web", "cambio_objeto",
                                  "disolucion", "concurso", "extincion", "sucursal"):
                     if (sub.sectores or sub.palabras) and not coincide(
@@ -101,7 +122,8 @@ def filas_csv(nuevas):
         c = _const(r)
         yield {
             "denominacion": r["denominacion"], "forma_juridica": r["forma_juridica"],
-            "provincia": r["provincia"], "municipio": c.get("municipio") or "",
+            "provincia": r["provincia"], "municipio": _muni(r) or "",
+            "isla": canarias.nombre_isla(i) if (i := canarias.isla(c.get("municipio"), r["provincia_codigo"])) else "",
             "domicilio": c.get("domicilio") or "", "objeto_social": c.get("objeto_social") or "",
             "sector": sectores.nombre_sector(c.get("sector") or "otros"),
             "cnae": c.get("cnae") or "", "capital_eur": c.get("capital") or "",
@@ -136,7 +158,7 @@ def html_correo(sub, sel, titulo, intro, cfg, extra_html="", recortado=False) ->
     filas = []
     for r in sel["nuevas"][:300]:
         c = _const(r)
-        lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
+        lugar = (_muni(r) or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
         borme = "" if recortado else f"<br><a href='{e(r['url_pdf'])}' style='color:#0f6b4f'>BORME</a>"
         nombre = ocultar.nombre_parcial(r["denominacion"]) if recortado else r["denominacion"]
         objeto = ocultar.recortar_texto(c.get("objeto_social"), 110) if recortado else (c.get("objeto_social") or "")[:260]
@@ -160,7 +182,10 @@ def html_correo(sub, sel, titulo, intro, cfg, extra_html="", recortado=False) ->
             f"{(' · ' + _eur(ev.get('importe'))) if ev.get('importe') else ''}</li>"
             for r, ev in sel["senales"][:150])
         sen = f"<h3 style='color:#14213D;margin-top:28px'>Señales de empresas existentes</h3><ul>{items}</ul>"
-    filtro = ", ".join(nombre_prov(p) for p in sub.provincias)
+    islas = getattr(sub, "islas", None) or []
+    provs_islas = {canarias.ISLAS[i][1] for i in islas}
+    filtro = ", ".join([canarias.nombre_isla(i) for i in islas] +
+                       [nombre_prov(p) for p in sub.provincias if p not in provs_islas])
     if sub.sectores or sub.palabras:
         filtro += " · " + ", ".join([sectores.nombre_sector(s) for s in sub.sectores] + sub.palabras)
     return f"""<!doctype html><html><body style="margin:0;background:#F4F6F5;font-family:Arial,Helvetica,sans-serif;color:#14213D">
@@ -182,7 +207,7 @@ def texto_plano(sel, recortado=False) -> str:
     lineas = []
     for r in sel["nuevas"]:
         c = _const(r)
-        lugar = (c.get("municipio") or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
+        lugar = (_muni(r) or r.get("provincia") or "") if recortado else (c.get("domicilio") or "")
         if recortado:
             lineas.append(f"- {ocultar.nombre_parcial(r['denominacion'])} | {lugar} | "
                           f"{ocultar.recortar_texto(c.get('objeto_social'), 110)}")
@@ -350,14 +375,14 @@ def entregar_listas(st, cartero: Cartero) -> int:
         if (pi.get("metadata") or {}).get("rc_entregado") == "1":
             continue
         campos = suscriptores._campos(ses)
-        provs = suscriptores.provincias_de_campo(campos.get("provincia") or "", "basico")
+        provs, islas = suscriptores.provincias_e_islas(campos.get("provincia") or "", "basico")
         secs, pal = suscriptores.interpreta_actividad(campos.get("actividad", ""))
         email = (ses.get("customer_details") or {}).get("email")
         if not provs or not email:
             continue
-        sub = suscriptores.Suscriptor(id=ses["id"], email=email, plan="pro", provincias=provs,
+        sub = suscriptores.Suscriptor(id=ses["id"], email=email, plan="pro", provincias=provs, islas=islas,
                                       sectores=secs, palabras=pal)
-        zona = "Canarias" if len(provs) > 1 else nombre_prov(provs[0])
+        zona = canarias.nombre_isla(islas[0]) if islas else ("Canarias" if len(provs) > 1 else nombre_prov(provs[0]))
         regs = almacen.registros_rango(hoy - timedelta(days=31), hoy, solo_constituciones=True)
         sel = {"nuevas": [r for r in regs if coincide(r, sub)], "senales": []}
         titulo = f"Tu lista: {len(sel['nuevas'])} sociedades creadas en {zona} (30 días)"

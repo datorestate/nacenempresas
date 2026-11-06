@@ -14,7 +14,7 @@ import os
 import re
 from dataclasses import asdict, dataclass, field
 
-from . import sectores
+from . import canarias, sectores
 from .provincias import codigo_provincia, lista_provincias, normaliza
 
 LIMITE_PROVINCIAS = {"basico": 1, "pro": 5, "lista": 1}
@@ -28,6 +28,7 @@ class Suscriptor:
     estado: str = "active"         # active | trialing
     nombre: str = ""
     provincias: list = field(default_factory=list)
+    islas: list = field(default_factory=list)   # vacío = toda la provincia
     sectores: list = field(default_factory=list)
     palabras: list = field(default_factory=list)
     frecuencia: str = "diaria"
@@ -65,6 +66,38 @@ def interpreta_actividad(texto: str):
 
 
 CANARIAS = ["35", "38"]
+
+
+def islas_de_campo(texto: str) -> list[str]:
+    """Islas pedidas: 'iLZ' (desplegable de Stripe), 'Lanzarote', 'isla de Tenerife'...
+    'Tenerife' y 'Gran Canaria' sin 'isla' siguen significando la provincia."""
+    out = []
+    for t in re.split(r"[,;/\n]| y ", texto or ""):
+        t = t.strip()
+        if not t:
+            continue
+        ambiguo = normaliza(t) in ("tenerife", "gran canaria")
+        i = None if ambiguo else canarias.isla_de_texto(t)
+        if i and i not in out:
+            out.append(i)
+    return out
+
+
+def provincias_e_islas(texto: str, plan: str) -> tuple[list[str], list[str]]:
+    """Provincias que hay que leer y, si se pidió alguna isla, las islas a las que se limita.
+    Una isla cuenta como una provincia para el límite del plan."""
+    islas = islas_de_campo(texto)
+    provs = provincias_de_campo(texto, plan) if not (plan == "basico" and islas) else []
+    explicitas = set(provs)
+    islas = [i for i in islas if canarias.ISLAS[i][1] not in explicitas]  # la provincia entera manda
+    if plan == "basico" and islas:
+        islas = islas[:1]
+    else:
+        islas = islas[:max(0, LIMITE_PROVINCIAS.get(plan, 5) - len(provs))] if provs else islas[:LIMITE_PROVINCIAS.get(plan, 5)]
+    for i in islas:
+        if canarias.ISLAS[i][1] not in provs:
+            provs.append(canarias.ISLAS[i][1])
+    return provs, islas
 
 
 def provincias_de_campo(texto: str, plan: str) -> list[str]:
@@ -111,13 +144,13 @@ def desde_stripe(st) -> list[Suscriptor]:
             campos = _campos(sesiones[0]) if sesiones else {}
             email = cust.get("email") or (sesiones[0].get("customer_details") or {}).get("email") if sesiones else cust.get("email")
             prov_txt = campos.get("provincia") or campos.get("provincias") or ""
-            provs = provincias_de_campo(prov_txt, plan)
+            provs, islas = provincias_e_islas(prov_txt, plan)
             secs, palabras = interpreta_actividad(campos.get("actividad", ""))
             tiene_pago = bool(s.get("default_payment_method") or
                               ((cust.get("invoice_settings") or {}).get("default_payment_method")))
             subs.append(Suscriptor(
                 id=s["id"], email=email or "", plan=plan, estado=estado,
-                nombre=(cust.get("name") or ""), provincias=provs, sectores=secs,
+                nombre=(cust.get("name") or ""), provincias=provs, islas=islas, sectores=secs,
                 palabras=palabras, frecuencia=(campos.get("frecuencia") or "diaria").lower(),
                 fin_prueba=s.get("trial_end"), tiene_pago=tiene_pago,
                 bienvenida_enviada=(s.get("metadata") or {}).get("rc_bienvenida") == "1",
@@ -133,11 +166,13 @@ def manuales() -> list[Suscriptor]:
     for i, d in enumerate(json.loads(bruto)):
         provs = d.get("provincias") or []
         txt = ",".join(provs) if isinstance(provs, list) else provs
-        provs = lista_provincias(txt.replace("Canarias", "Las Palmas, Santa Cruz de Tenerife"), 52)
+        provs, islas = provincias_e_islas(txt, d.get("plan", "pro"))
+        if "Canarias" in txt:
+            provs = sorted(set(provs) | {"35", "38"})
         secs, pal = interpreta_actividad(d.get("actividad", ""))
         out.append(Suscriptor(
             id=d.get("id", f"manual-{i}"), email=d["email"], plan=d.get("plan", "pro"),
-            estado=d.get("estado", "active"), nombre=d.get("nombre", ""), provincias=provs,
+            estado=d.get("estado", "active"), nombre=d.get("nombre", ""), provincias=provs, islas=islas,
             sectores=d.get("sectores", secs), palabras=d.get("palabras", pal),
             frecuencia=d.get("frecuencia", "diaria"), bienvenida_enviada=True))
     return out
